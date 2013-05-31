@@ -3,17 +3,23 @@ using System.Collections;
 using System.Collections.Generic;
 
 
-namespace TinyJSON.Proxy
+namespace TinyJSON
 {
-	public sealed class Array : Variant, IEnumerable<Variant>
+	public sealed class ProxyArray : Variant, IEnumerable<Variant>
 	{
 		private List<Variant> list;
 
 
-		public Array()
+		public ProxyArray()
 		{
 			list = new List<Variant>();
 		}
+
+
+//		protected override IEnumerator<Variant> _GetEnumerator()
+//		{
+//			return list.GetEnumerator();
+//		}
 
 
 		IEnumerator<Variant> IEnumerable<Variant>.GetEnumerator()

@@ -1,14 +1,14 @@
 using System;
 
 
-namespace TinyJSON.Proxy
+namespace TinyJSON
 {
-	public sealed class String : Variant
+	public sealed class ProxyString : Variant
 	{
 		private string value;
 
 
-		public String( string value )
+		public ProxyString( string value )
 		{
 			this.value = value;
 		}

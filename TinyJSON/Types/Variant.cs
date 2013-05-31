@@ -1,10 +1,12 @@
 using System;
+using System.Collections;
+using System.Collections.Generic;
 using System.Globalization;
 
 
 namespace TinyJSON
 {
-	public abstract class Variant : IConvertible
+	public abstract class Variant : IConvertible //, IEnumerable<Variant>
 	{
 		protected static IFormatProvider formatProvider = new NumberFormatInfo();
 
@@ -19,6 +21,24 @@ namespace TinyJSON
 		{
 			return JSON.DecodeType<T>( this );
 		}
+
+
+//		IEnumerator<Variant> IEnumerable<Variant>.GetEnumerator()
+//		{
+//			return _GetEnumerator();
+//		}
+//
+//
+//		IEnumerator IEnumerable.GetEnumerator()
+//		{
+//			return _GetEnumerator();
+//		}
+//
+//
+//		protected virtual IEnumerator<Variant> _GetEnumerator()
+//		{
+//			throw new NotSupportedException( this.GetType() + " is not enumerable." );
+//		}
 
 
 		public virtual TypeCode GetTypeCode()
@@ -119,6 +139,12 @@ namespace TinyJSON
 		public virtual ulong ToUInt64( IFormatProvider provider )
 		{
 			throw new InvalidCastException( "Cannot convert " + this.GetType() + " to UInt64" );
+		}
+
+
+		public override string ToString()
+		{
+			return ToString( formatProvider );
 		}
 
 

@@ -4,7 +4,15 @@ using TinyJSON;
 
 namespace TinyJSON
 {
-	class Data
+	enum TestEnum
+	{
+		Thing1,
+		Thing2,
+		Thing3
+	}
+
+
+	class TestData
 	{
 		public int i;
 		public float f;
@@ -17,9 +25,9 @@ namespace TinyJSON
 
 		public List<int> l;
 
-		public static Data New()
+		public static TestData New()
 		{
-			var data = new Data();
+			var data = new TestData();
 			data.i = 5;
 			data.f = 3.14f;
 			data.d = 1.23456789;
@@ -51,18 +59,18 @@ namespace TinyJSON
 
 			string json;
 			{
-				var data = Data.New();
+				var data = TestData.New();
 				json = JSON.Dump( data, true );
 				Console.WriteLine( json );
 			}
 
 			{
-				Data data;
+				TestData data;
 				JSON.Load( json ).Make( out data );
 			}
 
 			{
-				var data = JSON.Load( json ).Make<Data> ();
+				var data = JSON.Load( json ).Make<TestData>();
 				Console.WriteLine( JSON.Dump( data ));
 			}
 
@@ -80,6 +88,20 @@ namespace TinyJSON
 				JSON.MakeInto( data, out list );
 				Console.WriteLine( "[" + String.Join( ", ", list ) + "]" );
 			}
+
+			{
+				TestEnum testEnum = JSON.Load( "\"Thing1\"" ).Make<TestEnum>();
+				Console.WriteLine( testEnum );
+			}
+
+			// Variant enumerators might not be a good idea and are not implemented yet.
+//			{
+//				var data = JSON.Load( "[1,2,3]" );
+//				foreach (var item in data)
+//				{
+//					Console.WriteLine( item as string );
+//				}
+//			}
 		}
 	}
 }

@@ -1,7 +1,6 @@
 using System;
 using System.Collections;
 using System.Collections.Generic;
-using System.Linq;
 
 
 namespace TinyJSON
@@ -38,6 +37,11 @@ namespace TinyJSON
 		{
 			var type = typeof( T );
 
+			if (type.IsEnum)
+			{
+				return (T) Enum.Parse( type, data.ToString() );
+			}
+
 			if (type.IsValueType || type == typeof(string))
 			{
 				return (T) Convert.ChangeType( data, type );
@@ -56,7 +60,7 @@ namespace TinyJSON
 			}
 
 			var instance = Activator.CreateInstance<T>();
-			foreach (var pair in data as Proxy.Object)
+			foreach (var pair in data as ProxyObject)
 			{
 				var field = type.GetField( pair.Key );
 				if (!Attribute.GetCustomAttributes( field ).Any( attr => attr is Skip ))
@@ -74,7 +78,7 @@ namespace TinyJSON
 		{
 			var list = new List<T>();
 
-			foreach (var item in data as Proxy.Array)
+			foreach (var item in data as ProxyArray)
 			{
 				list.Add( DecodeType<T>( item ) );
 			}
@@ -87,7 +91,7 @@ namespace TinyJSON
 		{
 			var dict = new Dictionary<K,V>();
 
-			foreach (var pair in data as Proxy.Object)
+			foreach (var pair in data as ProxyObject)
 			{
 				var k = (K) Convert.ChangeType( pair.Key, typeof( K ) );
 				var v = DecodeType<V>( pair.Value );

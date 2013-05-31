@@ -1,14 +1,14 @@
 using System;
 
 
-namespace TinyJSON.Proxy
+namespace TinyJSON
 {
-	public sealed class Boolean : Variant
+	public sealed class ProxyBoolean : Variant
 	{
 		private bool value;
 
 
-		public Boolean( bool value )
+		public ProxyBoolean( bool value )
 		{
 			this.value = value;
 		}

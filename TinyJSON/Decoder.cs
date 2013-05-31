@@ -3,9 +3,10 @@ using System.IO;
 using System.Text;
 using System;
 
+
 namespace TinyJSON
 {
-	internal sealed class Decoder : IDisposable
+	public sealed class Decoder : IDisposable
 	{
 		const string WHITE_SPACE = " \t\n\r";
 		const string WORD_BREAK  = " \t\n\r{}[],:\"";
@@ -52,9 +53,9 @@ namespace TinyJSON
 		}
 
 
-		Proxy.Object DecodeObject()
+		ProxyObject DecodeObject()
 		{
-			Proxy.Object obj = new Proxy.Object();
+			ProxyObject obj = new ProxyObject();
 
 			// ditch opening brace
 			json.Read();
@@ -95,9 +96,9 @@ namespace TinyJSON
 		}
 
 
-		Proxy.Array DecodeArray()
+		ProxyArray DecodeArray()
 		{
-			Proxy.Array array = new Proxy.Array();
+			ProxyArray array = new ProxyArray();
 
 			// ditch opening bracket
 			json.Read();
@@ -154,10 +155,10 @@ namespace TinyJSON
 				return DecodeArray();
 
 			case TOKEN.TRUE:
-				return new Proxy.Boolean( true );
+				return new ProxyBoolean( true );
 
 			case TOKEN.FALSE:
-				return new Proxy.Boolean( false );
+				return new ProxyBoolean( false );
 
 			case TOKEN.NULL:
 				return null;
@@ -247,13 +248,13 @@ namespace TinyJSON
 				}
 			}
 
-			return new Proxy.String( s.ToString() );
+			return new ProxyString( s.ToString() );
 		}
 
 
 		Variant DecodeNumber()
 		{
-			return new Proxy.Number( NextWord );
+			return new ProxyNumber( NextWord );
 		}
 
 

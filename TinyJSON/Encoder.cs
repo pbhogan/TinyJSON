@@ -1,13 +1,12 @@
 using System;
 using System.Collections;
-using System.Linq;
 using System.Reflection;
 using System.Text;
 
 
 namespace TinyJSON
 {
-	internal sealed class Encoder
+	public sealed class Encoder
 	{
 		const string INDENT = "\t";
 
@@ -61,6 +60,11 @@ namespace TinyJSON
 			if (value is bool)
 			{
 				builder.Append( value.ToString().ToLower());
+			}
+			else
+			if (value is Enum)
+			{
+				EncodeString( value.ToString() );
 			}
 			else
 			if ((asList = value as IList) != null)

@@ -3,17 +3,23 @@ using System.Collections;
 using System.Collections.Generic;
 
 
-namespace TinyJSON.Proxy
+namespace TinyJSON
 {
-	public sealed class Object : Variant, IEnumerable<KeyValuePair<string, Variant>>
+	public sealed class ProxyObject : Variant, IEnumerable<KeyValuePair<string, Variant>>
 	{
 		private Dictionary<string, Variant> dict;
 
 
-		public Object()
+		public ProxyObject()
 		{
 			dict = new Dictionary<string, Variant>();
 		}
+
+
+//		protected override IEnumerator<Variant> _GetEnumerator()
+//		{
+//			return new ProxyObjectEnumerator( dict );
+//		}
 
 
 		IEnumerator<KeyValuePair<string, Variant>> IEnumerable<KeyValuePair<string, Variant>>.GetEnumerator()

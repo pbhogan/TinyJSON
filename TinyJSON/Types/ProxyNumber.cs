@@ -2,14 +2,14 @@ using System;
 using System.Globalization;
 
 
-namespace TinyJSON.Proxy
+namespace TinyJSON
 {
-	public sealed class Number : Variant
+	public sealed class ProxyNumber : Variant
 	{
 		private IConvertible value;
 
 
-		public Number( IConvertible value )
+		public ProxyNumber( IConvertible value )
 		{
 			if (value is string)
 			{
