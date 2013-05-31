@@ -2,13 +2,10 @@
   <MonoDevelop.Ide.Workspace ActiveConfiguration="Release" />
   <MonoDevelop.Ide.Workbench ActiveDocument="Example/Program.cs">
     <Files>
-      <File FileName="TinyJSON/Types/Variant.cs" Line="9" Column="49" />
-      <File FileName="TinyJSON/Types/ProxyArray.cs" Line="19" Column="5" />
-      <File FileName="TinyJSON/Types/ProxyBoolean.cs" Line="6" Column="34" />
-      <File FileName="TinyJSON/Types/ProxyObject.cs" Line="21" Column="47" />
-      <File FileName="TinyJSON/Types/ProxyString.cs" Line="6" Column="33" />
-      <File FileName="TinyJSON/Types/ProxyNumber.cs" Line="7" Column="33" />
-      <File FileName="Example/Program.cs" Line="70" Column="36" />
+      <File FileName="TinyJSON/Encoder.cs" Line="64" Column="8" />
+      <File FileName="Example/Program.cs" Line="84" Column="4" />
+      <File FileName="TinyJSON/Json.cs" Line="42" Column="1" />
+      <File FileName="TinyJSON/Types/Variant.cs" Line="147" Column="11" />
     </Files>
   </MonoDevelop.Ide.Workbench>
   <MonoDevelop.Ide.DebuggingService.Breakpoints>

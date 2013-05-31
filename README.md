@@ -4,10 +4,10 @@ TinyJSON is a simple, more betterer JSON library for C#, based on MiniJSON.
 
 ## Features
 
-* Transmogrify things into JSON and back again.
+* Transmogrify objects into JSON and back again.
 * Uses reflection to dump and load simple POD structures (including nested objects) automagically.
-* Parsed data uses proxy variants that can be implicitly cast in most situations for cleaner code.
-* Pretty printing for JSON output.
+* Parsed data uses proxy variants that can be implicitly cast to primitive types for cleaner code.
+* Optional pretty printing for JSON output.
 
 ## How To
 
@@ -25,7 +25,7 @@ namespace TinyJSON
 }
 ```
 
-`Load()` will load a string of JSON, returns `null` if invalid or a `Variant` proxy object if successful. The proxy allows for implicit casts and can convert between various C# numberic value types.
+`Load()` will load a string of JSON, returns `null` if invalid or a `Variant` proxy object if successful. The proxy allows for implicit casts and can convert between various C# numeric value types.
 
 ```csharp
 var data = JSON.Load( "{\"foo\": 1, \"bar\": 2.34}" );
@@ -122,7 +122,7 @@ My primary use case for this library is with Mono and Unity3D version 4 and high
 
 ## Meta
 
-Developed by Patrick Hogan [[twitter](http://twitter.com/pbhogan) &bull; [github](http://github.com/pbhogan) &bull; [website](http://www.gallantgames.com)]
+Crafted by Patrick Hogan [[twitter](http://twitter.com/pbhogan) &bull; [github](http://github.com/pbhogan) &bull; [website](http://www.gallantgames.com)]
 
 Based on [MiniJSON](https://gist.github.com/darktable/1411710) by Calvin Rien
 
