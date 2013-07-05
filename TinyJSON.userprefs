@@ -2,11 +2,28 @@
   <MonoDevelop.Ide.Workspace ActiveConfiguration="Release" />
   <MonoDevelop.Ide.Workbench ActiveDocument="Example/Program.cs">
     <Files>
-      <File FileName="TinyJSON/Encoder.cs" Line="64" Column="8" />
-      <File FileName="Example/Program.cs" Line="84" Column="4" />
-      <File FileName="TinyJSON/Json.cs" Line="42" Column="1" />
-      <File FileName="TinyJSON/Types/Variant.cs" Line="147" Column="11" />
+      <File FileName="Example/Program.cs" Line="120" Column="31" />
+      <File FileName="TinyJSON/Json.cs" Line="71" Column="23" />
+      <File FileName="TinyJSON/Types/Variant.cs" Line="54" Column="1" />
     </Files>
+    <Pads>
+      <Pad Id="ProjectPad">
+        <State expanded="True">
+          <Node name="Example" expanded="True">
+            <Node name="Program.cs" selected="True" />
+          </Node>
+          <Node name="TinyJSON" expanded="True">
+            <Node name="Types" expanded="True" />
+          </Node>
+        </State>
+      </Pad>
+      <Pad Id="ClassPad">
+        <State expanded="True" selected="True" />
+      </Pad>
+      <Pad Id="MonoDevelop.Debugger.WatchPad">
+        <State />
+      </Pad>
+    </Pads>
   </MonoDevelop.Ide.Workbench>
   <MonoDevelop.Ide.DebuggingService.Breakpoints>
     <BreakpointStore />

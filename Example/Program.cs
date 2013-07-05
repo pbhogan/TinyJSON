@@ -12,7 +12,7 @@ namespace TinyJSON
 	}
 
 
-	class TestData
+	class TestClass
 	{
 		public int i;
 		public float f;
@@ -25,9 +25,9 @@ namespace TinyJSON
 
 		public List<int> l;
 
-		public static TestData New()
+		public static TestClass New()
 		{
-			var data = new TestData();
+			var data = new TestClass();
 			data.i = 5;
 			data.f = 3.14f;
 			data.d = 1.23456789;
@@ -37,6 +37,19 @@ namespace TinyJSON
 			data.l = new List<int>() { { 0 }, { 1 }, { 2 } };
 			return data;
 		}
+
+		[Load]
+		private void OnLoad()
+		{
+			Console.WriteLine( "TestData.OnLoad() called!" );
+		}
+	}
+
+
+	struct TestStruct
+	{
+		public int x;
+		public int y;
 	}
 
 
@@ -45,33 +58,28 @@ namespace TinyJSON
 		public static void Main( string [] args )
 		{
 			{
-				var data = JSON.Load( "{\"foo\": 1, \"bar\": 2.34}" );
-				int i = data["foo"];
-				float f = data["bar"];
+				var variant = JSON.Load( "{\"foo\": 1, \"bar\": 2.34}" );
+				int i = variant["foo"];
+				float f = variant["bar"];
 				Console.WriteLine( i );
 				Console.WriteLine( f );
 			}
 
 			{
-				var data = new List<int> () { { 0 }, { 1 }, { 2 } };
-				Console.WriteLine( JSON.Dump( data ));
-			}
-
-			string json;
-			{
-				var data = TestData.New();
-				json = JSON.Dump( data, true );
-				Console.WriteLine( json );
+				var variant = new List<int> () { { 0 }, { 1 }, { 2 } };
+				Console.WriteLine( JSON.Dump( variant ));
 			}
 
 			{
-				TestData data;
-				JSON.Load( json ).Make( out data );
-			}
+				var testClass = TestClass.New();
+				var testClassJson = JSON.Dump( testClass, true );
+				Console.WriteLine( testClassJson );
+			
+				JSON.Load( testClassJson ).Make( out testClass );
+				Console.WriteLine( JSON.Dump( testClass ));
 
-			{
-				var data = JSON.Load( json ).Make<TestData>();
-				Console.WriteLine( JSON.Dump( data ));
+				testClass = JSON.Load( testClassJson ).Make<TestClass>();
+				Console.WriteLine( JSON.Dump( testClass ));
 			}
 
 			{
@@ -84,8 +92,8 @@ namespace TinyJSON
 			
 			{
 				List<int> list;
-				var data = JSON.Load( "[1,2,3]" );
-				JSON.MakeInto( data, out list );
+				var variant = JSON.Load( "[1,2,3]" );
+				JSON.MakeInto( variant, out list );
 				Console.WriteLine( "[" + String.Join( ", ", list ) + "]" );
 			}
 
@@ -94,7 +102,20 @@ namespace TinyJSON
 				Console.WriteLine( testEnum );
 			}
 
-			// Variant enumerators might not be a good idea and are not implemented yet.
+			{
+				var testStruct = new TestStruct();
+				testStruct.x = 1;
+				testStruct.y = 2;
+
+				var testStructJson = JSON.Dump( testStruct );
+				Console.WriteLine( testStructJson );
+
+				testStruct = JSON.Load( testStructJson ).Make<TestStruct>();
+				Console.WriteLine( testStruct.x + " should be 1" );
+				Console.WriteLine( testStruct.y + " should be 2" );
+			}
+
+			// Variant enumerators might not be a good idea and are not fully implemented yet.
 //			{
 //				var data = JSON.Load( "[1,2,3]" );
 //				foreach (var item in data)

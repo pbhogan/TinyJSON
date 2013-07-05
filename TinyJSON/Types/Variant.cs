@@ -13,13 +13,15 @@ namespace TinyJSON
 
 		public void Make<T>( out T item )
 		{
-			item = JSON.DecodeType<T>( this );
+			JSON.MakeInto<T>( this, out item );
 		}
 
 
 		public T Make<T>()
 		{
-			return JSON.DecodeType<T>( this );
+			T item;
+			JSON.MakeInto<T>( this, out item );
+			return item;
 		}
 
 
