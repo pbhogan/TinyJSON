@@ -2,127 +2,71 @@ using System.Collections.Generic;
 using System;
 using TinyJSON;
 
-namespace TinyJSON
+
+enum TestEnum
 {
-	enum TestEnum
+	Thing1,
+	Thing2,
+	Thing3
+}
+
+
+struct TestStruct
+{
+	public int x;
+	public int y;
+}
+
+
+class TestClass
+{
+	public string name;
+	public TestEnum type;
+	public List<TestStruct> data = new List<TestStruct>();
+
+	[Skip] 
+	public int _ingnored;
+
+	[Load]
+	public void OnLoad()
 	{
-		Thing1,
-		Thing2,
-		Thing3
+		Console.WriteLine( "Load callback fired!" );
 	}
+}
 
 
-	class TestClass
+class Program
+{
+	public static void Main( string [] args )
 	{
-		public int i;
-		public float f;
-		public double d;
-		public string s;
-		public bool b;
+		var testClass = new TestClass();
+		testClass.name = "Rumpelstiltskin Jones";
+		testClass.type = TestEnum.Thing2;
+		testClass.data.Add( new TestStruct() { x = 1, y = 2 } );
+		testClass.data.Add( new TestStruct() { x = 3, y = 4 } );
+		testClass.data.Add( new TestStruct() { x = 5, y = 6 } );
 
-		[Skip]
-		public int h; // ignored by TinyJSON
+		var testClassJson = JSON.Dump( testClass, true );
+		Console.WriteLine( testClassJson );
 
-		public List<int> l;
+		testClass = JSON.Load( testClassJson ).Make<TestClass>();
+		Console.WriteLine( JSON.Dump( testClass ));
 
-		public static TestClass New()
+
+		// Iterating over variants:
+
+		var list = JSON.Load( "[1,2,3]" );
+		foreach (var item in list as ProxyArray)
 		{
-			var data = new TestClass();
-			data.i = 5;
-			data.f = 3.14f;
-			data.d = 1.23456789;
-			data.s = "OHAI!";
-			data.b = true;
-			data.h = 7;
-			data.l = new List<int>() { { 0 }, { 1 }, { 2 } };
-			return data;
+			int number = item;
+			Console.WriteLine( number );
 		}
 
-		[Load]
-		private void OnLoad()
+		var dict = JSON.Load( "{\"x\":1,\"y\":2}" );
+		foreach (var pair in dict as ProxyObject)
 		{
-			Console.WriteLine( "TestData.OnLoad() called!" );
-		}
-	}
-
-
-	struct TestStruct
-	{
-		public int x;
-		public int y;
-	}
-
-
-	class Program
-	{
-		public static void Main( string [] args )
-		{
-			{
-				var variant = JSON.Load( "{\"foo\": 1, \"bar\": 2.34}" );
-				int i = variant["foo"];
-				float f = variant["bar"];
-				Console.WriteLine( i );
-				Console.WriteLine( f );
-			}
-
-			{
-				var variant = new List<int> () { { 0 }, { 1 }, { 2 } };
-				Console.WriteLine( JSON.Dump( variant ));
-			}
-
-			{
-				var testClass = TestClass.New();
-				var testClassJson = JSON.Dump( testClass, true );
-				Console.WriteLine( testClassJson );
-			
-				JSON.Load( testClassJson ).Make( out testClass );
-				Console.WriteLine( JSON.Dump( testClass ));
-
-				testClass = JSON.Load( testClassJson ).Make<TestClass>();
-				Console.WriteLine( JSON.Dump( testClass ));
-			}
-
-			{
-				Dictionary<string, float> dict;
-				var data = JSON.Load( "{\"foo\": 1, \"bar\": 2.34}" );
-				JSON.MakeInto( data, out dict );
-				Console.WriteLine( dict["foo"] );
-				Console.WriteLine( dict["bar"] );
-			}
-			
-			{
-				List<int> list;
-				var variant = JSON.Load( "[1,2,3]" );
-				JSON.MakeInto( variant, out list );
-				Console.WriteLine( "[" + String.Join( ", ", list ) + "]" );
-			}
-
-			{
-				TestEnum testEnum = JSON.Load( "\"Thing1\"" ).Make<TestEnum>();
-				Console.WriteLine( testEnum );
-			}
-
-			{
-				var testStruct = new TestStruct();
-				testStruct.x = 1;
-				testStruct.y = 2;
-
-				var testStructJson = JSON.Dump( testStruct );
-				Console.WriteLine( testStructJson );
-
-				testStruct = JSON.Load( testStructJson ).Make<TestStruct>();
-				Console.WriteLine( testStruct.x + " should be 1" );
-				Console.WriteLine( testStruct.y + " should be 2" );
-			}
-
-			// Variant enumerators might not be a good idea and are not fully implemented yet.
-//			{
-//				var data = JSON.Load( "[1,2,3]" );
-//				foreach (var item in data)
-//				{
-//					Console.WriteLine( item as string );
-//				}
-//			}
+			float value = pair.Value;
+			Console.WriteLine( pair.Key + " = " + value );
 		}
 	}
 }

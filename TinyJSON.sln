@@ -5,12 +5,18 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "TinyJSON", "TinyJSON\TinyJS
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Example", "Example\Example.csproj", "{8BBC60F1-CEB1-40FC-904C-B681495ADAB6}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "UnitTests", "UnitTests\UnitTests.csproj", "{145E7879-3E4D-41BF-963B-3CAF01C89AD7}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
 		Release|Any CPU = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{145E7879-3E4D-41BF-963B-3CAF01C89AD7}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{145E7879-3E4D-41BF-963B-3CAF01C89AD7}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{145E7879-3E4D-41BF-963B-3CAF01C89AD7}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{145E7879-3E4D-41BF-963B-3CAF01C89AD7}.Release|Any CPU.Build.0 = Release|Any CPU
 		{8BBC60F1-CEB1-40FC-904C-B681495ADAB6}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
 		{8BBC60F1-CEB1-40FC-904C-B681495ADAB6}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{8BBC60F1-CEB1-40FC-904C-B681495ADAB6}.Release|Any CPU.ActiveCfg = Release|Any CPU

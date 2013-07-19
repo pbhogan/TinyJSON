@@ -16,12 +16,6 @@ namespace TinyJSON
 		}
 
 
-//		protected override IEnumerator<Variant> _GetEnumerator()
-//		{
-//			return new ProxyObjectEnumerator( dict );
-//		}
-
-
 		IEnumerator<KeyValuePair<string, Variant>> IEnumerable<KeyValuePair<string, Variant>>.GetEnumerator()
 		{
 			return dict.GetEnumerator();
@@ -44,6 +38,12 @@ namespace TinyJSON
 		{
 			get { return dict[key]; }
 			set { dict[key] = value; }
+		}
+
+
+		public int Count
+		{
+			get { return dict.Count; }
 		}
 	}
 }

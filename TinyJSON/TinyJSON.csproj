@@ -35,13 +35,13 @@
     <Compile Include="Decoder.cs" />
     <Compile Include="Encoder.cs" />
     <Compile Include="Types\Variant.cs" />
-    <Compile Include="Json.cs" />
     <Compile Include="Extensions.cs" />
     <Compile Include="Types\ProxyArray.cs" />
     <Compile Include="Types\ProxyBoolean.cs" />
     <Compile Include="Types\ProxyObject.cs" />
     <Compile Include="Types\ProxyString.cs" />
     <Compile Include="Types\ProxyNumber.cs" />
+    <Compile Include="JSON.cs" />
   </ItemGroup>
   <Import Project="$(MSBuildBinPath)\Microsoft.CSharp.targets" />
   <ItemGroup>

@@ -1,17 +1,20 @@
-## Information
+## Description
 
-TinyJSON is a simple, more betterer JSON library for C#, based on MiniJSON.
+TinyJSON is a simple JSON library for C# that strives for ease of use.
 
 ## Features
 
 * Transmogrify objects into JSON and back again.
-* Uses reflection to dump and load simple POD structures (including nested objects) automagically.
+* Uses reflection to dump and load object graphs automagically.
+* Supports primitives, classes, structs, enums, lists and dictionaries.
 * Parsed data uses proxy variants that can be implicitly cast to primitive types for cleaner code.
-* Optional pretty printing for JSON output.
+* Numeric types are handled without fuss.
+* Optional pretty printing JSON output.
+* Unit tested.
 
-## How To
+## Usage
 
-There are really only three calls you need to know:
+The API is namespaced under `TinyJSON` and the primary class is `JSON`. There are really only three methods you need to know:
 
 ```csharp
 namespace TinyJSON
@@ -37,92 +40,130 @@ float f = data["bar"];
 
 ```csharp
 var data = new List<int>() { { 0 }, { 1 }, { 2 } };
-Console.WriteLine( JSON.Dump( data ) ); // Output: [1,2,3]
+Console.WriteLine( JSON.Dump( data ) ); // output: [1,2,3]
 ```
 
-But it is also much more powerful than this, handling nested objects and simple class types. Given:
+TinyJSON can also handle classes, structs, enums and nested objects. Given these definitions:
 
 ```csharp
-class Data
+enum TestEnum
 {
-	public int i;
-	public float f;
-	public double d;
-	public string s;
-	public bool b;
+	Thing1,
+	Thing2,
+	Thing3
+}
+
+
+struct TestStruct
+{
+	public int x;
+	public int y;
+}
+
+
+class TestClass
+{
+	public string name;
+	public TestEnum type;
+	public List<TestStruct> data = new List<TestStruct>();
 
 	[Skip]
-	public int h; // will be ignored
+	public int _ingnored;
 
-	public List<int> l;
-
-	public static Data New()
+	[Load]
+	public void OnLoad()
 	{
-		var data = new Data();
-		data.i = 5;
-		data.f = 3.14f;
-		data.d = 1.23456789;
-		data.s = "OHAI!";
-		data.b = true;
-		data.h = 7;
-		data.l = new List<int>() { { 0 }, { 1 }, { 2 } };
-		return data;
+		Console.WriteLine( "Load callback fired!" );
 	}
 }
 ```
 
-The following:
+The following code:
 
 ```csharp
-var data = Data.New();
-var json = JSON.Dump( data, true );
-Console.WriteLine( json );
+var testClass = new TestClass();
+testClass.name = "Rumpelstiltskin Jones";
+testClass.type = TestEnum.Thing2;
+testClass.data.Add( new TestStruct() { x = 1, y = 2 } );
+testClass.data.Add( new TestStruct() { x = 3, y = 4 } );
+testClass.data.Add( new TestStruct() { x = 5, y = 6 } );
+
+var testClassJson = JSON.Dump( testClass, true );
+Console.WriteLine( testClassJson );
 ```
 
 Will output:
 
 ```json
 {
-	"i": 5,
-	"f": 3.14,
-	"d": 1.23456789,
-	"s": "OHAI!",
-	"b": true,
-	"l": [
-		0,
-		1,
-		2
+	"name": "Rumpelstiltskin Jones",
+	"type": "Thing2",
+	"data": [
+		{
+			"x": 1,
+			"y": 2
+		},
+		{
+			"x": 3,
+			"y": 4
+		},
+		{
+			"x": 5,
+			"y": 6
+		}
 	]
 }
 ```
 
-Finally, `MakeInto()` can be used to reconstruct JSON data back into an object. Using the output above in `string json`:
+You can use, `MakeInto()` can be used to reconstruct JSON data back into an object:
 
 ```csharp
-Data data;
-JSON.MakeInto( JSON.Load( json ), out data );
+TestClass testClass;
+JSON.MakeInto( JSON.Load( testClassJson ), out testClass );
 ```
 
-There are also `Make()` methods on `Variant`, so either of the following will work:
+There are also `Make()` methods on `Variant` which provide options for slightly more natural syntax:
 
 ```csharp
-Data data;
-JSON.Load( json ).Make( out data );
+TestClass testClass;
+
+JSON.Load( json ).Make( out testClass );
 // or
-var data = JSON.Load( json ).Make<Data>();
+testClass = JSON.Load( json ).Make<Data>();
 ```
 
-Go forth and be awesome.
+Finally, you'll notice that `TestClass` has a method `OnLoad()` which has the `TinyJSON.Load` attribute. This method will be called *after* the object has been fully deserialized. This is useful when some further initialization logic is required.
 
-## Note
+## Using Variants
+
+For most use cases you can just assign, cast or make your object graph using the API outlined above, but at times you may need to work with the intermediate proxy objects to, say, dig through and iterate over a collection. To do this, cast the variant to the appropriate subclass (either `ProxyArray` or `ProxyObject`) and you're good to go:
+
+```csharp
+var list = JSON.Load( "[1,2,3]" );
+foreach (var item in list as ProxyArray)
+{
+	int number = item;
+	Console.WriteLine( number );
+}
+
+var dict = JSON.Load( "{\"x\":1,\"y\":2}" );
+foreach (var pair in dict as ProxyObject)
+{
+	float value = pair.Value;
+	Console.WriteLine( pair.Key + " = " + value );
+}
+```
+
+## Notes
 
 This project was developed with pain elimination and lightweight size in mind. That said, it should be able able to handle reasonable amounts of reasonable data at reasonable speeds.
 
-My primary use case for this library is with Mono and Unity3D version 4 and higher, so compatibility is focused there, though it should work with most modern C# environments.
+My primary use case for this library is with Mono and Unity3D (version 4), so compatibility is focused there, though it should work with most modern C# environments.
 
 ## Meta
 
-Crafted by Patrick Hogan [[twitter](http://twitter.com/pbhogan) &bull; [github](http://github.com/pbhogan) &bull; [website](http://www.gallantgames.com)]
+Handcrafted by Patrick Hogan [[twitter](http://twitter.com/pbhogan) &bull; [github](http://github.com/pbhogan) &bull; [website](http://www.gallantgames.com)]
 
 Based on [MiniJSON](https://gist.github.com/darktable/1411710) by Calvin Rien
 
+Released under the [MIT License](http://www.opensource.org/licenses/mit-license.php).

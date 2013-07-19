@@ -2,19 +2,17 @@
   <MonoDevelop.Ide.Workspace ActiveConfiguration="Release" />
   <MonoDevelop.Ide.Workbench ActiveDocument="Example/Program.cs">
     <Files>
-      <File FileName="Example/Program.cs" Line="120" Column="31" />
-      <File FileName="TinyJSON/Json.cs" Line="71" Column="23" />
-      <File FileName="TinyJSON/Types/Variant.cs" Line="54" Column="1" />
+      <File FileName="UnitTests/TestClassType.cs" Line="28" Column="3" />
+      <File FileName="Example/Program.cs" Line="63" Column="4" />
     </Files>
     <Pads>
       <Pad Id="ProjectPad">
         <State expanded="True">
-          <Node name="Example" expanded="True">
-            <Node name="Program.cs" selected="True" />
-          </Node>
+          <Node name="Example" expanded="True" />
           <Node name="TinyJSON" expanded="True">
             <Node name="Types" expanded="True" />
           </Node>
+          <Node name="UnitTests" expanded="True" />
         </State>
       </Pad>
       <Pad Id="ClassPad">
@@ -22,6 +20,14 @@
       </Pad>
       <Pad Id="MonoDevelop.Debugger.WatchPad">
         <State />
+      </Pad>
+      <Pad Id="MonoDevelop.NUnit.TestPad">
+        <State expanded="True">
+          <Node name="UnitTests" expanded="True">
+            <Node name="TestCollectionTypes" expanded="True" />
+            <Node name="TestSimpleTypes" expanded="True" />
+          </Node>
+        </State>
       </Pad>
     </Pads>
   </MonoDevelop.Ide.Workbench>

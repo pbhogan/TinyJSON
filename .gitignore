@@ -1,2 +1,6 @@
 .DS_Store
 /Example/bin/
+
+/UnitTests/test-results/
+/UnitTests/bin/
+/test-results/

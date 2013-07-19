@@ -16,12 +16,6 @@ namespace TinyJSON
 		}
 
 
-//		protected override IEnumerator<Variant> _GetEnumerator()
-//		{
-//			return list.GetEnumerator();
-//		}
-
-
 		IEnumerator<Variant> IEnumerable<Variant>.GetEnumerator()
 		{
 			return list.GetEnumerator();
@@ -44,6 +38,12 @@ namespace TinyJSON
 		{
 			get { return list[index]; }
 			set { list[index] = value; }
+		}
+
+
+		public int Count
+		{
+			get { return list.Count; }
 		}
 	}
 }

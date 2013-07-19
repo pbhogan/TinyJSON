@@ -6,7 +6,7 @@ using System.Globalization;
 
 namespace TinyJSON
 {
-	public abstract class Variant : IConvertible //, IEnumerable<Variant>
+	public abstract class Variant : IConvertible
 	{
 		protected static IFormatProvider formatProvider = new NumberFormatInfo();
 
@@ -23,24 +23,6 @@ namespace TinyJSON
 			JSON.MakeInto<T>( this, out item );
 			return item;
 		}
-
-
-//		IEnumerator<Variant> IEnumerable<Variant>.GetEnumerator()
-//		{
-//			return _GetEnumerator();
-//		}
-//
-//
-//		IEnumerator IEnumerable.GetEnumerator()
-//		{
-//			return _GetEnumerator();
-//		}
-//
-//
-//		protected virtual IEnumerator<Variant> _GetEnumerator()
-//		{
-//			throw new NotSupportedException( this.GetType() + " is not enumerable." );
-//		}
 
 
 		public virtual TypeCode GetTypeCode()
