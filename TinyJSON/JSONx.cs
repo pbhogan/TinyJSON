@@ -31,7 +31,7 @@ namespace TinyJSON
 
 		public static void MakeInto<T>( Variant data, out T item )
 		{
-			item = DecodeType<T>( data );
+			 item = DecodeType<T>( data );
 		}
 
 
@@ -73,7 +73,7 @@ namespace TinyJSON
 			// Now decode each field, except for those tagged with [Skip] attribute.
 			foreach (var pair in data as ProxyObject)
 			{
-				var field = type.GetField( pair.Key, BindingFlags.Public | BindingFlags.NonPublic | BindingFlags.Instance );
+				var field = type.GetField( pair.Key, instanceBindingFlags );
 				if (field != null)
 				{
 					if (!Attribute.GetCustomAttributes( field ).Any( attr => attr is Skip ))
@@ -96,7 +96,7 @@ namespace TinyJSON
 			}
 
 			// Invoke methods tagged with [Load] attribute.
-			foreach (var method in type.GetMethods( BindingFlags.Public | BindingFlags.NonPublic | BindingFlags.Instance ))
+			foreach (var method in type.GetMethods( instanceBindingFlags ))
 			{
 				if (method.GetCustomAttributes( false ).Any( attr => attr is Load ))
 				{
@@ -159,10 +159,45 @@ namespace TinyJSON
 		}
 
 
-		private static MethodInfo decodeTypeMethod = typeof( JSON ).GetMethod( "DecodeType", BindingFlags.NonPublic | BindingFlags.Static );
-		private static MethodInfo decodeListMethod = typeof( JSON ).GetMethod( "DecodeList", BindingFlags.NonPublic | BindingFlags.Static );
-		private static MethodInfo decodeDictionaryMethod = typeof( JSON ).GetMethod( "DecodeDictionary", BindingFlags.NonPublic | BindingFlags.Static );
-		private static MethodInfo decodeArrayMethod = typeof( JSON ).GetMethod( "DecodeArray", BindingFlags.NonPublic | BindingFlags.Static );
+		private static BindingFlags instanceBindingFlags = BindingFlags.Public | BindingFlags.NonPublic | BindingFlags.Instance;
+		private static BindingFlags staticBindingFlags = BindingFlags.Public | BindingFlags.NonPublic | BindingFlags.Static;
+		private static MethodInfo decodeTypeMethod = typeof( JSON ).GetMethod( "DecodeType", staticBindingFlags );
+		private static MethodInfo decodeListMethod = typeof( JSON ).GetMethod( "DecodeList", staticBindingFlags );
+		private static MethodInfo decodeDictionaryMethod = typeof( JSON ).GetMethod( "DecodeDictionary", staticBindingFlags );
+		private static MethodInfo decodeArrayMethod = typeof( JSON ).GetMethod( "DecodeArray", staticBindingFlags );
+
+
+		private static void SupportTypeForAOT<T>()
+		{
+			DecodeType<T>( null );
+			DecodeList<T>( null );
+			DecodeArray<T>( null );
+			DecodeDictionary<Int16,T>( null );
+			DecodeDictionary<UInt16,T>( null );
+			DecodeDictionary<Int32,T>( null );
+			DecodeDictionary<UInt32,T>( null );
+			DecodeDictionary<Int64,T>( null );
+			DecodeDictionary<UInt64,T>( null );
+			DecodeDictionary<Single,T>( null );
+			DecodeDictionary<Double,T>( null );
+			DecodeDictionary<Boolean,T>( null );
+			DecodeDictionary<String,T>( null );
+		}
+
+
+		private static void SupportValueTypesForAOT()
+		{
+			SupportTypeForAOT<Int16>();
+			SupportTypeForAOT<UInt16>();
+			SupportTypeForAOT<Int32>();
+			SupportTypeForAOT<UInt32>();
+			SupportTypeForAOT<Int64>();
+			SupportTypeForAOT<UInt64>();
+			SupportTypeForAOT<Single>();
+			SupportTypeForAOT<Double>();
+			SupportTypeForAOT<Boolean>();
+			SupportTypeForAOT<String>();
+		}
 	}
 }
 
