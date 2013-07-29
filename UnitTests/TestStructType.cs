@@ -45,6 +45,5 @@ public class TestStructType
 
 		Assert.IsTrue( loadCallbackFired );
 	}
-
 }
 

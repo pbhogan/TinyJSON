@@ -1,18 +1,23 @@
 ﻿<Properties>
-  <MonoDevelop.Ide.Workspace ActiveConfiguration="Release" />
-  <MonoDevelop.Ide.Workbench ActiveDocument="Example/Program.cs">
+  <MonoDevelop.Ide.Workspace ActiveConfiguration="Debug|iPhone" PreferredExecutionTarget="MonoDevelop.IPhone.IPhoneDeviceTarget.Editorial Pad" />
+  <MonoDevelop.Ide.Workbench ActiveDocument="TinyJSON/JSON.cs">
     <Files>
-      <File FileName="UnitTests/TestClassType.cs" Line="28" Column="3" />
-      <File FileName="Example/Program.cs" Line="63" Column="4" />
+      <File FileName="UnitTests/TestSimpleTypes.cs" Line="115" Column="26" />
+      <File FileName="UnitTests/TestStructType.cs" Line="48" Column="1" />
+      <File FileName="TinyJSON/JSON.cs" Line="171" Column="4" />
+      <File FileName="TinyJSON/Extensions.cs" Line="24" Column="3" />
+      <File FileName="UnitTests/TestClassType.cs" Line="46" Column="1" />
     </Files>
     <Pads>
       <Pad Id="ProjectPad">
         <State expanded="True">
           <Node name="Example" expanded="True" />
-          <Node name="TinyJSON" expanded="True">
-            <Node name="Types" expanded="True" />
-          </Node>
+          <Node name="TinyJSON" expanded="True" />
           <Node name="UnitTests" expanded="True" />
+          <Node name="UnitTests-iOS" expanded="True" selected="True">
+            <Node name="TinyJSON" expanded="True" />
+            <Node name="UnitTests" expanded="True" />
+          </Node>
         </State>
       </Pad>
       <Pad Id="ClassPad">
@@ -23,10 +28,7 @@
       </Pad>
       <Pad Id="MonoDevelop.NUnit.TestPad">
         <State expanded="True">
-          <Node name="UnitTests" expanded="True">
-            <Node name="TestCollectionTypes" expanded="True" />
-            <Node name="TestSimpleTypes" expanded="True" />
-          </Node>
+          <Node name="UnitTests" expanded="True" selected="True" />
         </State>
       </Pad>
     </Pads>

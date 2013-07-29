@@ -4,3 +4,5 @@
 /UnitTests/test-results/
 /UnitTests/bin/
 /test-results/
+/UnitTests-iOS/bin/
+/UnitTests-iOS/obj/
