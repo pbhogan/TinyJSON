@@ -1,8 +1,17 @@
 .DS_Store
-/Example/bin/
 
-/UnitTests/test-results/
 /UnitTests/bin/
-/test-results/
+/UnitTests/obj/
+
 /UnitTests-iOS/bin/
 /UnitTests-iOS/obj/
+
+/TinyJSON/bin/
+/TinyJSON/obj/
+
+/Example/bin/
+/Example/obj/
+
+test-results/
+
+NUnit/

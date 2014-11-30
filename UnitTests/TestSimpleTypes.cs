@@ -108,15 +108,15 @@ public class TestSimpleTypes
 
 	class ValueTypes
 	{
-		public Int16   i16 = 1;
-		public UInt16  u16 = 2;
-		public Int32   i32 = 3;
-		public UInt32  u32 = 4;
-		public Int64   i64 = 5;
-		public UInt64  u64 = 6;
-		public Single  s   = 7;
-		public Double  d   = 8;
-		public Boolean b   = true;
+		public Int16 i16 = 1;
+		public UInt16 u16 = 2;
+		public Int32 i32 = 3;
+		public UInt32 u32 = 4;
+		public Int64 i64 = 5;
+		public UInt64 u64 = 6;
+		public Single s = 7;
+		public Double d = 8;
+		public Boolean b = true;
 	}
 
 
@@ -126,6 +126,7 @@ public class TestSimpleTypes
 		ValueTypes item;
 		var json = "{\"i16\":1,\"u16\":2,\"i32\":3,\"u32\":4,\"i64\":5,\"u64\":6,\"s\":7,\"d\":8,\"b\":true}";
 		var data = JSON.Load( json );
+
 		Assert.DoesNotThrow( () => data.Make<ValueTypes>() );
 		Assert.DoesNotThrow( () => JSON.MakeInto( data, out item ) );
 	}
