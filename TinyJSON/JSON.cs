@@ -23,7 +23,7 @@ namespace TinyJSON
 		}
 
 
-		public static string Dump( object data, bool prettyPrint = false ) 
+		public static string Dump( object data, bool prettyPrint = false )
 		{
 			return Encoder.Encode( data, prettyPrint );
 		}
@@ -48,7 +48,7 @@ namespace TinyJSON
 			{
 				return (T) Convert.ChangeType( data, type );
 			}
-			
+
 			if (type.IsArray)
 			{
 				var makeFunc = decodeArrayMethod.MakeGenericMethod( new Type[] { type.GetElementType() } );
@@ -76,7 +76,7 @@ namespace TinyJSON
 				var field = type.GetField( pair.Key, instanceBindingFlags );
 				if (field != null)
 				{
-					if (!Attribute.GetCustomAttributes( field ).Any( attr => attr is Skip ))
+					if (!Attribute.GetCustomAttributes( field ).AnyOfType( typeof( Skip ) ))
 					{
 						var makeFunc = decodeTypeMethod.MakeGenericMethod( new Type[] { field.FieldType } );
 						if (type.IsValueType)
@@ -98,7 +98,7 @@ namespace TinyJSON
 			// Invoke methods tagged with [Load] attribute.
 			foreach (var method in type.GetMethods( instanceBindingFlags ))
 			{
-				if (method.GetCustomAttributes( false ).Any( attr => attr is Load ))
+				if (method.GetCustomAttributes( false ).AnyOfType( typeof( Load ) ))
 				{
 					if (method.GetParameters().Length == 0)
 					{

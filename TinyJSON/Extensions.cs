@@ -23,21 +23,21 @@ namespace TinyJSON
 		}
 
 
-		public static bool Any<TSource>( this IEnumerable<TSource> source, Func<TSource, bool> predicate )
+		public static bool AnyOfType<TSource>( this IEnumerable<TSource> source, Type expectedType )
 		{
 			if (source == null)
 			{
 				throw new ArgumentNullException( "source" );
 			}
 
-			if (predicate == null)
+			if (expectedType == null)
 			{
-				throw new ArgumentNullException( "predicate" );
+				throw new ArgumentNullException( "expectedType" );
 			}
 
 			foreach (var item in source)
 			{
-				if (predicate( item ))
+				if ( expectedType.IsAssignableFrom( item.GetType() ) )
 				{
 					return true;
 				}

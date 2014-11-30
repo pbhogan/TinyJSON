@@ -102,7 +102,7 @@ namespace TinyJSON
 			var fields = value.GetType().GetFields( BindingFlags.Public | BindingFlags.NonPublic | BindingFlags.Instance );
 			foreach (var field in fields)
 			{
-				if (!Attribute.GetCustomAttributes( field ).Any( attr => attr is Skip ))
+				if (!Attribute.GetCustomAttributes( field ).AnyOfType( typeof( Skip ) ))
 				{
 					if (!first)
 					{
