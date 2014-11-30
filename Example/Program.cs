@@ -25,7 +25,7 @@ class TestClass
 	public List<TestStruct> data = new List<TestStruct>();
 
 	[Skip] 
-	public int _ingnored;
+	public int _ignored;
 
 	[Load]
 	public void OnLoad()
@@ -37,7 +37,7 @@ class TestClass
 
 class Program
 {
-	public static void Main( string [] args )
+	public static void Main( string[] args )
 	{
 		var testClass = new TestClass();
 		testClass.name = "Rumpelstiltskin Jones";
@@ -50,7 +50,7 @@ class Program
 		Console.WriteLine( testClassJson );
 
 		testClass = JSON.Load( testClassJson ).Make<TestClass>();
-		Console.WriteLine( JSON.Dump( testClass ));
+		Console.WriteLine( JSON.Dump( testClass ) );
 
 
 		// Iterating over variants:
