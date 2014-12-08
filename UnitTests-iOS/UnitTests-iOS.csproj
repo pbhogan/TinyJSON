@@ -132,6 +132,12 @@
     <Compile Include="..\UnitTests\TestSimpleTypes.cs">
       <Link>UnitTests\TestSimpleTypes.cs</Link>
     </Compile>
+    <Compile Include="..\UnitTests\TestStructType.cs">
+      <Link>UnitTests\TestStructType.cs</Link>
+    </Compile>
+    <Compile Include="..\TinyJSON\EncodeOptions.cs">
+      <Link>TinyJSON\EncodeOptions.cs</Link>
+    </Compile>
   </ItemGroup>
   <Import Project="$(MSBuildBinPath)\Microsoft.CSharp.targets" />
   <Import Project="$(MSBuildExtensionsPath)\Xamarin\iOS\Xamarin.MonoTouch.CSharp.targets" />

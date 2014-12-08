@@ -1,72 +1,97 @@
-using System.Collections.Generic;
 using System;
+using System.Collections.Generic;
+using System.Globalization;
 using TinyJSON;
 
 
-enum TestEnum
+namespace TestProgram
 {
-	Thing1,
-	Thing2,
-	Thing3
-}
-
-
-struct TestStruct
-{
-	public int x;
-	public int y;
-}
-
-
-class TestClass
-{
-	public string name;
-	public TestEnum type;
-	public List<TestStruct> data = new List<TestStruct>();
-
-	[Skip] 
-	public int _ignored;
-
-	[Load]
-	public void OnLoad()
+	enum TestEnum
 	{
-		Console.WriteLine( "Load callback fired!" );
+		Thing1,
+		Thing2,
+		Thing3
 	}
-}
 
 
-class Program
-{
-	public static void Main( string[] args )
+	struct TestStruct
 	{
-		var testClass = new TestClass();
-		testClass.name = "Rumpelstiltskin Jones";
-		testClass.type = TestEnum.Thing2;
-		testClass.data.Add( new TestStruct() { x = 1, y = 2 } );
-		testClass.data.Add( new TestStruct() { x = 3, y = 4 } );
-		testClass.data.Add( new TestStruct() { x = 5, y = 6 } );
-
-		var testClassJson = JSON.Dump( testClass, true );
-		Console.WriteLine( testClassJson );
-
-		testClass = JSON.Load( testClassJson ).Make<TestClass>();
-		Console.WriteLine( JSON.Dump( testClass ) );
+		public int x;
+		public int y;
+	}
 
 
-		// Iterating over variants:
+	class BaseClass
+	{
+	}
 
-		var list = JSON.Load( "[1,2,3]" );
-		foreach (var item in list as ProxyArray)
+
+	class TestClass : BaseClass
+	{
+		public string name;
+		public TestEnum type;
+		public List<TestStruct> data = new List<TestStruct>();
+
+		[Skip] 
+		public int _ignored;
+
+		[Load]
+		public void OnLoad()
 		{
-			int number = item;
-			Console.WriteLine( number );
+			Console.WriteLine( "Load callback fired!" );
 		}
+	}
 
-		var dict = JSON.Load( "{\"x\":1,\"y\":2}" );
-		foreach (var pair in dict as ProxyObject)
+
+	class ValueTypes
+	{
+		public Int16 i16 = 1;
+		public UInt16 u16 = 2;
+		public Int32 i32 = 3;
+		public UInt32 u32 = 4;
+		public Int64 i64 = 5;
+		public UInt64 u64 = 6;
+		public Single s = 7;
+		public Double d = 8;
+		public Decimal m = 9;
+		public Boolean b = true;
+	}
+
+
+	class Program
+	{
+		public static void Main( string[] args )
 		{
-			float value = pair.Value;
-			Console.WriteLine( pair.Key + " = " + value );
+			var testClass = new TestClass();
+			testClass.name = "Rumpelstiltskin Jones";
+			testClass.type = TestEnum.Thing2;
+			testClass.data.Add( new TestStruct() { x = 1, y = 2 } );
+			testClass.data.Add( new TestStruct() { x = 3, y = 4 } );
+			testClass.data.Add( new TestStruct() { x = 5, y = 6 } );
+
+			var testClassJson = JSON.Dump( (BaseClass) testClass, EncodeOptions.PrettyPrint | EncodeOptions.TypeHint );
+			Console.WriteLine( testClassJson );
+
+			testClass = JSON.Load( testClassJson ).Make<BaseClass>() as TestClass;
+			Console.WriteLine( JSON.Dump( testClass, EncodeOptions.PrettyPrint | EncodeOptions.TypeHint ) );
+
+			/*
+			// Iterating over variants:
+
+			var list = JSON.Load( "[1,2,3]" );
+			foreach (var item in list as ProxyArray)
+			{
+				int number = item;
+				Console.WriteLine( number );
+			}
+
+			var dict = JSON.Load( "{\"x\":1,\"y\":2}" );
+			foreach (var pair in dict as ProxyObject)
+			{
+				float value = pair.Value;
+				Console.WriteLine( pair.Key + " = " + value );
+			}
+			/**/
 		}
 	}
 }

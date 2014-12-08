@@ -8,35 +8,41 @@ namespace TinyJSON
 {
 	public sealed class Encoder
 	{
-		const string INDENT = "\t";
-
 		StringBuilder builder;
-		bool prettyPrint;
+		EncodeOptions options;
 		int indent;
 
 
-		Encoder( bool prettyPrint = false )
+		Encoder( EncodeOptions options )
 		{
-			this.prettyPrint = prettyPrint;
-
+			this.options = options;
 			builder = new StringBuilder();
 			indent = 0;
 		}
 
 
-		public static string Encode( object obj, bool prettyPrint = false )
+		public static string Encode( object obj, EncodeOptions options = EncodeOptions.Default )
 		{
-			var instance = new Encoder( prettyPrint );
+			var instance = new Encoder( options );
 			instance.EncodeValue( obj );
 			return instance.builder.ToString();
 		}
 
 
-		void AppendIndent()
+		bool PrettyPrint
 		{
-			for (int i = 0; i < indent; i++)
+			get
 			{
-				builder.Append( INDENT );
+				return ((options & EncodeOptions.PrettyPrint) == EncodeOptions.PrettyPrint);
+			}
+		}
+
+
+		bool TypeHint
+		{
+			get
+			{
+				return ((options & EncodeOptions.TypeHint) == EncodeOptions.TypeHint);
 			}
 		}
 
@@ -59,7 +65,7 @@ namespace TinyJSON
 			else
 			if (value is bool)
 			{
-				builder.Append( value.ToString().ToLower());
+				builder.Append( value.ToString().ToLower() );
 			}
 			else
 			if (value is Enum)
@@ -79,7 +85,7 @@ namespace TinyJSON
 			else
 			if (value is char)
 			{
-				EncodeString( value.ToString());
+				EncodeString( value.ToString() );
 			}
 			else
 			{
@@ -90,105 +96,192 @@ namespace TinyJSON
 
 		void EncodeObject( object value )
 		{
-			builder.Append( '{' );
+			AppendOpenBrace();
 
-			if (prettyPrint)
+			var type = value.GetType();
+
+			var firstItem = !TypeHint;
+			if (TypeHint)
 			{
-				builder.Append( '\n' );
-				indent++;
+				if (PrettyPrint)
+				{
+					AppendIndent();
+				}
+				EncodeString( ProxyObject.TypeHintName );
+				AppendColon();
+				EncodeString( type.FullName );
+				firstItem = false;
 			}
 
-			bool first = true;
-			var fields = value.GetType().GetFields( BindingFlags.Public | BindingFlags.NonPublic | BindingFlags.Instance );
+			var fields = type.GetFields( BindingFlags.Public | BindingFlags.NonPublic | BindingFlags.Instance );
 			foreach (var field in fields)
 			{
-				if (!Attribute.GetCustomAttributes( field ).AnyOfType( typeof( Skip ) ))
+				if (!Attribute.GetCustomAttributes( field ).AnyOfType( typeof(Skip) ))
 				{
-					if (!first)
-					{
-						builder.Append( ',' );
-
-						if (prettyPrint)
-						{
-							builder.Append( '\n' );
-						}
-					}
-
-					if (prettyPrint)
-					{
-						AppendIndent();
-					}
-
+					AppendComma( firstItem );
 					EncodeString( field.Name );
-
-					builder.Append( ':' );
-
-					if (prettyPrint)
-					{
-						builder.Append( ' ' );
-					}
-
-					EncodeValue( field.GetValue( value ));
-
-					first = false;
+					AppendColon();
+					EncodeValue( field.GetValue( value ) );
+					firstItem = false;
 				}
 			}
 
-			if (prettyPrint)
-			{
-				builder.Append( '\n' );
-				indent--;
-				AppendIndent();
-			}
-
-			builder.Append( '}' );
+			AppendCloseBrace();
 		}
 
 
 		void EncodeDictionary( IDictionary value )
 		{
-			bool first = true;
+			if (value.Count == 0)
+			{
+				builder.Append( "{}" );
+			}
+			else
+			{
+				AppendOpenBrace();
 
+				var firstItem = true;
+				foreach (object e in value.Keys)
+				{
+					AppendComma( firstItem );
+					EncodeString( e.ToString() );
+					AppendColon();
+					EncodeValue( value[e] );
+					firstItem = false;
+				}
+
+				AppendCloseBrace();
+			}
+		}
+
+
+		void EncodeList( IList value )
+		{
+			if (value.Count == 0)
+			{
+				builder.Append( "[]" );
+			}
+			else
+			{
+				AppendOpenBracket();
+
+				var firstItem = true;
+				foreach (object obj in value)
+				{
+					AppendComma( firstItem );
+					EncodeValue( obj );
+					firstItem = false;
+				}
+
+				AppendCloseBracket();
+			}
+		}
+
+
+		void EncodeString( string value )
+		{
+			builder.Append( '\"' );
+
+			char[] charArray = value.ToCharArray();
+			foreach (var c in charArray)
+			{
+				switch (c)
+				{
+					case '"':
+						builder.Append( "\\\"" );
+						break;
+
+					case '\\':
+						builder.Append( "\\\\" );
+						break;
+
+					case '\b':
+						builder.Append( "\\b" );
+						break;
+
+					case '\f':
+						builder.Append( "\\f" );
+						break;
+
+					case '\n':
+						builder.Append( "\\n" );
+						break;
+
+					case '\r':
+						builder.Append( "\\r" );
+						break;
+
+					case '\t':
+						builder.Append( "\\t" );
+						break;
+
+					default:
+						int codepoint = Convert.ToInt32( c );
+						if ((codepoint >= 32) && (codepoint <= 126))
+						{
+							builder.Append( c );
+						}
+						else
+						{
+							builder.Append( "\\u" + Convert.ToString( codepoint, 16 ).PadLeft( 4, '0' ) );
+						}
+						break;
+				}
+			}
+
+			builder.Append( '\"' );
+		}
+
+
+		void EncodeOther( object value )
+		{
+			if (value is float ||
+			    value is double ||
+			    value is int ||
+			    value is uint ||
+			    value is long ||
+			    value is sbyte ||
+			    value is byte ||
+			    value is short ||
+			    value is ushort ||
+			    value is ulong ||
+			    value is decimal)
+			{
+				builder.Append( value.ToString() );
+			}
+			else
+			{
+				EncodeObject( value );
+			}
+		}
+
+
+		#region Helpers
+
+		void AppendIndent()
+		{
+			for (int i = 0; i < indent; i++)
+			{
+				builder.Append( '\t' );
+			}
+		}
+
+
+		void AppendOpenBrace()
+		{
 			builder.Append( '{' );
 
-			if (prettyPrint)
+			if (PrettyPrint)
 			{
 				builder.Append( '\n' );
 				indent++;
 			}
+		}
 
-			foreach (object e in value.Keys)
-			{
-				if (!first)
-				{
-					builder.Append( ',' );
 
-					if (prettyPrint)
-					{
-						builder.Append( '\n' );
-					}
-				}
-
-				if (prettyPrint)
-				{
-					AppendIndent();
-				}
-
-				EncodeString( e.ToString());
-
-				builder.Append( ':' );
-
-				if (prettyPrint)
-				{
-					builder.Append( ' ' );
-				}
-
-				EncodeValue( value[e] );
-
-				first = false;
-			}
-
-			if (prettyPrint)
+		void AppendCloseBrace()
+		{
+			if (PrettyPrint)
 			{
 				builder.Append( '\n' );
 				indent--;
@@ -199,41 +292,21 @@ namespace TinyJSON
 		}
 
 
-		void EncodeList( IList value )
+		void AppendOpenBracket()
 		{
-			bool first = true;
-
 			builder.Append( '[' );
 
-			if (prettyPrint)
+			if (PrettyPrint)
 			{
 				builder.Append( '\n' );
 				indent++;
 			}
+		}
 
-			foreach (object obj in value)
-			{
-				if (!first)
-				{
-					builder.Append( ',' );
 
-					if (prettyPrint)
-					{
-						builder.Append( '\n' );
-					}
-				}
-
-				if (prettyPrint)
-				{
-					AppendIndent();
-				}
-
-				EncodeValue( obj );
-
-				first = false;
-			}
-
-			if (prettyPrint)
+		void AppendCloseBracket()
+		{
+			if (PrettyPrint)
 			{
 				builder.Append( '\n' );
 				indent--;
@@ -244,82 +317,36 @@ namespace TinyJSON
 		}
 
 
-		void EncodeString( string value )
+		void AppendComma( bool firstItem )
 		{
-			builder.Append( '\"' );
-
-			char [] charArray = value.ToCharArray();
-			foreach (var c in charArray)
+			if (!firstItem)
 			{
-				switch (c)
+				builder.Append( ',' );
+
+				if (PrettyPrint)
 				{
-				case '"':
-					builder.Append( "\\\"" );
-					break;
-
-				case '\\':
-					builder.Append( "\\\\" );
-					break;
-
-				case '\b':
-					builder.Append( "\\b" );
-					break;
-
-				case '\f':
-					builder.Append( "\\f" );
-					break;
-
-				case '\n':
-					builder.Append( "\\n" );
-					break;
-
-				case '\r':
-					builder.Append( "\\r" );
-					break;
-
-				case '\t':
-					builder.Append( "\\t" );
-					break;
-
-				default:
-					int codepoint = Convert.ToInt32( c );
-					if ((codepoint >= 32) && (codepoint <= 126))
-					{
-						builder.Append( c );
-					}
-					else
-					{
-						builder.Append( "\\u" + Convert.ToString( codepoint, 16 ).PadLeft( 4, '0' ));
-					}
-					break;
+					builder.Append( '\n' );
 				}
 			}
 
-			builder.Append( '\"' );
+			if (PrettyPrint)
+			{
+				AppendIndent();
+			}
 		}
 
 
-		void EncodeOther( object value )
+		void AppendColon()
 		{
-			if (value is float  ||
-			    value is double ||
-			    value is int    ||
-			    value is uint   ||
-			    value is long   ||
-			    value is sbyte  ||
-			    value is byte   ||
-			    value is short  ||
-			    value is ushort ||
-			    value is ulong  ||
-			    value is decimal)
+			builder.Append( ':' );
+
+			if (PrettyPrint)
 			{
-				builder.Append( value.ToString());
-			}
-			else
-			{
-				EncodeObject( value );
+				builder.Append( ' ' );
 			}
 		}
+
+		#endregion
 	}
 }
 

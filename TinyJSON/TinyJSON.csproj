@@ -9,7 +9,7 @@
     <OutputType>Library</OutputType>
     <RootNamespace>TinyJSON</RootNamespace>
     <AssemblyName>TinyJSON</AssemblyName>
-    <TargetFrameworkVersion>v3.5</TargetFrameworkVersion>
+    <TargetFrameworkVersion>v4.5</TargetFrameworkVersion>
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|AnyCPU' ">
     <DebugSymbols>true</DebugSymbols>
@@ -42,6 +42,7 @@
     <Compile Include="Types\ProxyString.cs" />
     <Compile Include="Types\ProxyNumber.cs" />
     <Compile Include="JSON.cs" />
+    <Compile Include="EncodeOptions.cs" />
   </ItemGroup>
   <Import Project="$(MSBuildBinPath)\Microsoft.CSharp.targets" />
   <ItemGroup>

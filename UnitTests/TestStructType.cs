@@ -30,7 +30,7 @@ public class TestStructType
 	{
 		var testStruct = new TestStruct() { x = 5, y = 7, z = 0 };
 
-		Assert.AreEqual( "{\"x\":5,\"y\":7}", JSON.Dump( testStruct ) );
+		Assert.AreEqual( "{\"@type\":\"" + testStruct.GetType().FullName + "\",\"x\":5,\"y\":7}", JSON.Dump( testStruct ) );
 	}
 
 

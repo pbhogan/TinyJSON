@@ -6,6 +6,7 @@ namespace TinyJSON
 {
 	public sealed class ProxyNumber : Variant
 	{
+		private static readonly char[] floatingPointCharacters = new char[] { '.', 'e' };
 		private IConvertible value;
 
 
@@ -24,27 +25,53 @@ namespace TinyJSON
 
 		private IConvertible Parse( string value )
 		{
-			if (value.IndexOf( '.' ) == -1)
+			if (value.IndexOfAny( floatingPointCharacters ) == -1)
 			{
-				if (value.IndexOf( '-' ) == -1)
+				if (value[0] == '-')
 				{
-					UInt64 parsedValue;
-					UInt64.TryParse( value, out parsedValue );
-					return parsedValue;
+					Int64 parsedValue;
+					if (Int64.TryParse( value, NumberStyles.Float, NumberFormatInfo.InvariantInfo, out parsedValue ))
+					{
+						return parsedValue;
+					}
 				}
 				else
 				{
-					Int64 parsedValue;
-					Int64.TryParse( value, out parsedValue );
-					return parsedValue;
+					UInt64 parsedValue;
+					if (UInt64.TryParse( value, NumberStyles.Float, NumberFormatInfo.InvariantInfo, out parsedValue ))
+					{
+						return parsedValue;
+					}
 				}
+			}
+
+			Decimal decimalValue;
+			if (Decimal.TryParse( value, NumberStyles.Float, NumberFormatInfo.InvariantInfo, out decimalValue ))
+			{
+				// Check for decimal underflow.
+				if (decimalValue == Decimal.Zero)
+				{
+					Double parsedValue;
+					if (Double.TryParse( value, NumberStyles.Float, NumberFormatInfo.InvariantInfo, out parsedValue ))
+					{
+						if (parsedValue != 0.0)
+						{
+							return parsedValue;
+						}
+					}
+				}
+				return decimalValue;
 			}
 			else
 			{
 				Double parsedValue;
-				Double.TryParse( value, out parsedValue );
-				return parsedValue;
+				if (Double.TryParse( value, NumberStyles.Float, NumberFormatInfo.InvariantInfo, out parsedValue ))
+				{
+					return parsedValue;
+				}
 			}
+
+			return 0;
 		}
 
 

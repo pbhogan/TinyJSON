@@ -7,6 +7,7 @@ namespace TinyJSON
 {
 	public sealed class ProxyObject : Variant, IEnumerable<KeyValuePair<string, Variant>>
 	{
+		internal const string TypeHintName = "@type";
 		private Dictionary<string, Variant> dict;
 
 
@@ -31,6 +32,26 @@ namespace TinyJSON
 		public void Add( string key, Variant item )
 		{
 			dict.Add( key, item );
+		}
+
+
+		public bool TryGetValue( string key, out Variant item )
+		{
+			return dict.TryGetValue( key, out item );
+		}
+
+
+		public string TypeHint
+		{
+			get
+			{
+				Variant item;
+				if (TryGetValue( TypeHintName, out item ))
+				{
+					return item.ToString();
+				}
+				return null;
+			}
 		}
 
 

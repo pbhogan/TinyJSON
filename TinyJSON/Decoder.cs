@@ -9,7 +9,7 @@ namespace TinyJSON
 	public sealed class Decoder : IDisposable
 	{
 		const string WHITE_SPACE = " \t\n\r";
-		const string WORD_BREAK  = " \t\n\r{}[],:\"";
+		const string WORD_BREAK = " \t\n\r{}[],:\"";
 
 		enum TOKEN
 		{
@@ -25,8 +25,7 @@ namespace TinyJSON
 			TRUE,
 			FALSE,
 			NULL
-		};
-
+		}
 
 		StringReader json;
 
@@ -65,32 +64,32 @@ namespace TinyJSON
 			{
 				switch (NextToken)
 				{
-				case TOKEN.NONE:
-					return null;
-
-				case TOKEN.COMMA:
-					continue;
-
-				case TOKEN.CURLY_CLOSE:
-					return obj;
-
-				default:
-					// name
-					string name = DecodeString();
-					if (name == null)
-					{
+					case TOKEN.NONE:
 						return null;
-					}
+
+					case TOKEN.COMMA:
+						continue;
+
+					case TOKEN.CURLY_CLOSE:
+						return obj;
+
+					default:
+					// name
+						string name = DecodeString();
+						if (name == null)
+						{
+							return null;
+						}
 
 					// :
-					if (NextToken != TOKEN.COLON)
-					{
-						return null;
-					}
-					json.Read();
+						if (NextToken != TOKEN.COLON)
+						{
+							return null;
+						}
+						json.Read();
 
-					obj.Add( name, DecodeValue() );
-					break;
+						obj.Add( name, DecodeValue() );
+						break;
 				}
 			}
 		}
@@ -111,19 +110,19 @@ namespace TinyJSON
 
 				switch (nextToken)
 				{
-				case TOKEN.NONE:
-					return null;
+					case TOKEN.NONE:
+						return null;
 
-				case TOKEN.COMMA:
-					continue;
+					case TOKEN.COMMA:
+						continue;
 
-				case TOKEN.SQUARED_CLOSE:
-					parsing = false;
-					break;
+					case TOKEN.SQUARED_CLOSE:
+						parsing = false;
+						break;
 
-				default:
-					array.Add( DecodeByToken( nextToken ) );
-					break;
+					default:
+						array.Add( DecodeByToken( nextToken ) );
+						break;
 				}
 			}
 
@@ -142,29 +141,29 @@ namespace TinyJSON
 		{
 			switch (token)
 			{
-			case TOKEN.STRING:
-				return DecodeString();
+				case TOKEN.STRING:
+					return DecodeString();
 
-			case TOKEN.NUMBER:
-				return DecodeNumber();
+				case TOKEN.NUMBER:
+					return DecodeNumber();
 
-			case TOKEN.CURLY_OPEN:
-				return DecodeObject();
+				case TOKEN.CURLY_OPEN:
+					return DecodeObject();
 
-			case TOKEN.SQUARED_OPEN:
-				return DecodeArray();
+				case TOKEN.SQUARED_OPEN:
+					return DecodeArray();
 
-			case TOKEN.TRUE:
-				return new ProxyBoolean( true );
+				case TOKEN.TRUE:
+					return new ProxyBoolean( true );
 
-			case TOKEN.FALSE:
-				return new ProxyBoolean( false );
+				case TOKEN.FALSE:
+					return new ProxyBoolean( false );
 
-			case TOKEN.NULL:
-				return null;
+				case TOKEN.NULL:
+					return null;
 
-			default:
-				return null;
+				default:
+					return null;
 			}
 		}
 
@@ -189,62 +188,62 @@ namespace TinyJSON
 				c = NextChar;
 				switch (c)
 				{
-				case '"':
-					parsing = false;
-					break;
-
-				case '\\':
-					if (json.Peek() == -1)
-					{
+					case '"':
 						parsing = false;
 						break;
-					}
 
-					c = NextChar;
-					switch (c)
-					{
-					case '"':
 					case '\\':
-					case '/':
-						s.Append( c );
-						break;
-
-					case 'b':
-						s.Append( '\b' );
-						break;
-
-					case 'f':
-						s.Append( '\f' );
-						break;
-
-					case 'n':
-						s.Append( '\n' );
-						break;
-
-					case 'r':
-						s.Append( '\r' );
-						break;
-
-					case 't':
-						s.Append( '\t' );
-						break;
-
-					case 'u':
-						var hex = new StringBuilder();
-
-						for (int i = 0; i < 4; i++)
+						if (json.Peek() == -1)
 						{
-							hex.Append( NextChar );
+							parsing = false;
+							break;
 						}
 
-						s.Append(( char ) Convert.ToInt32( hex.ToString(), 16 ));
-						break;
-					}
-					break;
+						c = NextChar;
+						switch (c)
+						{
+							case '"':
+							case '\\':
+							case '/':
+								s.Append( c );
+								break;
 
-				default:
-					s.Append( c );
-					break;
+							case 'b':
+								s.Append( '\b' );
+								break;
+
+							case 'f':
+								s.Append( '\f' );
+								break;
+
+							case 'n':
+								s.Append( '\n' );
+								break;
+
+							case 'r':
+								s.Append( '\r' );
+								break;
+
+							case 't':
+								s.Append( '\t' );
+								break;
+
+							case 'u':
+								var hex = new StringBuilder();
+
+								for (int i = 0; i < 4; i++)
+								{
+									hex.Append( NextChar );
+								}
+
+								s.Append( (char) Convert.ToInt32( hex.ToString(), 16 ) );
+								break;
+						}
+						break;
+
+					default:
+						s.Append( c );
+						break;
 				}
 			}
 
@@ -276,7 +275,7 @@ namespace TinyJSON
 		{
 			get
 			{
-				return Convert.ToChar( json.Peek());
+				return Convert.ToChar( json.Peek() );
 			}
 		}
 
@@ -284,7 +283,7 @@ namespace TinyJSON
 		{
 			get
 			{
-				return Convert.ToChar( json.Read());
+				return Convert.ToChar( json.Read() );
 			}
 		}
 
@@ -321,56 +320,56 @@ namespace TinyJSON
 
 				switch (PeekChar)
 				{
-				case '{':
-					return TOKEN.CURLY_OPEN;
+					case '{':
+						return TOKEN.CURLY_OPEN;
 
-				case '}':
-					json.Read();
-					return TOKEN.CURLY_CLOSE;
+					case '}':
+						json.Read();
+						return TOKEN.CURLY_CLOSE;
 
-				case '[':
-					return TOKEN.SQUARED_OPEN;
+					case '[':
+						return TOKEN.SQUARED_OPEN;
 
-				case ']':
-					json.Read();
-					return TOKEN.SQUARED_CLOSE;
+					case ']':
+						json.Read();
+						return TOKEN.SQUARED_CLOSE;
 
-				case ',':
-					json.Read();
-					return TOKEN.COMMA;
+					case ',':
+						json.Read();
+						return TOKEN.COMMA;
 
-				case '"':
-					return TOKEN.STRING;
+					case '"':
+						return TOKEN.STRING;
 
-				case ':':
-					return TOKEN.COLON;
+					case ':':
+						return TOKEN.COLON;
 
-				case '0':
-				case '1':
-				case '2':
-				case '3':
-				case '4':
-				case '5':
-				case '6':
-				case '7':
-				case '8':
-				case '9':
-				case '-':
-					return TOKEN.NUMBER;
+					case '0':
+					case '1':
+					case '2':
+					case '3':
+					case '4':
+					case '5':
+					case '6':
+					case '7':
+					case '8':
+					case '9':
+					case '-':
+						return TOKEN.NUMBER;
 				}
 
 				string word = NextWord;
 
 				switch (word)
 				{
-				case "false":
-					return TOKEN.FALSE;
+					case "false":
+						return TOKEN.FALSE;
 
-				case "true":
-					return TOKEN.TRUE;
+					case "true":
+						return TOKEN.TRUE;
 
-				case "null":
-					return TOKEN.NULL;
+					case "null":
+						return TOKEN.NULL;
 				}
 
 				return TOKEN.NONE;

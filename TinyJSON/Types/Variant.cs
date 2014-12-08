@@ -146,17 +146,50 @@ namespace TinyJSON
 		}
 
 
-		public static implicit operator Boolean( Variant variant ) { return variant.ToBoolean( formatProvider ); }
-		public static implicit operator Single(  Variant variant ) { return variant.ToSingle(  formatProvider ); }
-		public static implicit operator Double(  Variant variant ) { return variant.ToDouble(  formatProvider ); }
-		public static implicit operator UInt16(  Variant variant ) { return variant.ToUInt16(  formatProvider ); }
-		public static implicit operator Int16(   Variant variant ) { return variant.ToInt16(   formatProvider ); }
-		public static implicit operator UInt32(  Variant variant ) { return variant.ToUInt32(  formatProvider ); }
-		public static implicit operator Int32(   Variant variant ) { return variant.ToInt32(   formatProvider ); }
-		public static implicit operator UInt64(  Variant variant ) { return variant.ToUInt64(  formatProvider ); }
-		public static implicit operator Int64(   Variant variant ) { return variant.ToInt64(   formatProvider ); }
-		public static implicit operator Decimal( Variant variant ) { return variant.ToDecimal( formatProvider ); }
-		public static implicit operator String(  Variant variant ) { return variant.ToString(  formatProvider ); }
+		public static implicit operator Boolean( Variant variant )
+		{
+			return variant.ToBoolean( formatProvider );
+		}
+		public static implicit operator Single( Variant variant )
+		{
+			return variant.ToSingle( formatProvider );
+		}
+		public static implicit operator Double( Variant variant )
+		{
+			return variant.ToDouble( formatProvider );
+		}
+		public static implicit operator UInt16( Variant variant )
+		{
+			return variant.ToUInt16( formatProvider );
+		}
+		public static implicit operator Int16( Variant variant )
+		{
+			return variant.ToInt16( formatProvider );
+		}
+		public static implicit operator UInt32( Variant variant )
+		{
+			return variant.ToUInt32( formatProvider );
+		}
+		public static implicit operator Int32( Variant variant )
+		{
+			return variant.ToInt32( formatProvider );
+		}
+		public static implicit operator UInt64( Variant variant )
+		{
+			return variant.ToUInt64( formatProvider );
+		}
+		public static implicit operator Int64( Variant variant )
+		{
+			return variant.ToInt64( formatProvider );
+		}
+		public static implicit operator Decimal( Variant variant )
+		{
+			return variant.ToDecimal( formatProvider );
+		}
+		public static implicit operator String( Variant variant )
+		{
+			return variant.ToString( formatProvider );
+		}
 	}
 }
 
