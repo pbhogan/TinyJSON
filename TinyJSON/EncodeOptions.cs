@@ -8,8 +8,7 @@ namespace TinyJSON
 	{
 		None = 0,
 		PrettyPrint = 1,
-		TypeHint = 2,
-		Default = TypeHint
+		NoTypeHints = 2
 	}
 }
 

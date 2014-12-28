@@ -32,13 +32,35 @@ namespace TestProgram
 		public TestEnum type;
 		public List<TestStruct> data = new List<TestStruct>();
 
-		[Skip] 
-		public int _ignored;
+		#pragma warning disable 0414
+		private int priv1;
+		[Include] private int priv2;
+		#pragma warning restore 0414
 
-		[Load]
-		public void OnLoad()
+		int prop1 { get; set; }
+		[Include] int prop2 { set { } }
+		[Include] int prop3 { get; set; }
+
+		[Exclude] public int _ignored;
+
+		public void Init()
 		{
-			Console.WriteLine( "Load callback fired!" );
+			priv1 = 1;
+			priv2 = 2;
+
+			prop1 = 1;
+			prop2 = 2;
+			prop3 = 3;
+
+			name = "Rumpelstiltskin Jones";
+			type = TestEnum.Thing2;
+		}
+
+
+		[AfterDecode]
+		public void AfterDecode()
+		{
+			Console.WriteLine( "AfterDecode callback fired!" );
 		}
 	}
 
@@ -62,22 +84,40 @@ namespace TestProgram
 	{
 		public static void Main( string[] args )
 		{
+			int[,,] array;
+			var variant = JSON.Load( "[[[1,2],[3,4]],[[5,6],[7,8]],[[9,0],[1,2]]]" );
+			JSON.MakeInto( variant, out array );
+			Console.WriteLine( JSON.Dump( array ) );
+
+			/*
+			var array0 = new int[] { 1, 2, 3 };
+			Console.WriteLine( JSON.Dump( array0 ) );
+
+			var array1 = new int[,] { { 1, 2, 3 }, { 4, 5, 6 } };
+			Console.WriteLine( JSON.Dump( array1 ) );
+
+			var array2 = new int[,,] { { { 1, 2 }, { 3, 4 } }, { { 5, 6 }, { 7, 8 } }, { { 9, 0 }, { 1, 2 } } };
+			Console.WriteLine( JSON.Dump( array2 ) );
+
+			var array3 = new int[][] { new int[] { 1, 2, 3 }, new int[] { 4, 5, 6 } };
+			Console.WriteLine( JSON.Dump( array3 ) );
+			/**/
+
+			/*
 			var testClass = new TestClass();
-			testClass.name = "Rumpelstiltskin Jones";
-			testClass.type = TestEnum.Thing2;
+			testClass.Init();
 			testClass.data.Add( new TestStruct() { x = 1, y = 2 } );
 			testClass.data.Add( new TestStruct() { x = 3, y = 4 } );
 			testClass.data.Add( new TestStruct() { x = 5, y = 6 } );
 
-			var testClassJson = JSON.Dump( (BaseClass) testClass, EncodeOptions.PrettyPrint | EncodeOptions.TypeHint );
+			var testClassJson = JSON.Dump( (BaseClass) testClass, EncodeOptions.PrettyPrint );
 			Console.WriteLine( testClassJson );
 
 			testClass = JSON.Load( testClassJson ).Make<BaseClass>() as TestClass;
-			Console.WriteLine( JSON.Dump( testClass, EncodeOptions.PrettyPrint | EncodeOptions.TypeHint ) );
+			Console.WriteLine( JSON.Dump( testClass, EncodeOptions.PrettyPrint ) );
+			/**/
 
 			/*
-			// Iterating over variants:
-
 			var list = JSON.Load( "[1,2,3]" );
 			foreach (var item in list as ProxyArray)
 			{

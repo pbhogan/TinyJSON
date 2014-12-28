@@ -7,20 +7,62 @@ using System.Linq;
 
 namespace TinyJSON
 {
-	// Mark members that should not be dumped.
-	public sealed class Skip : Attribute
+	/// <summary>
+	/// Mark members that should be included. 
+	/// Public fields are included by default.
+	/// </summary>
+	public sealed class Include : Attribute
 	{
 	}
 
 
-	// Mark methods to be invoked after loading.
-	public sealed class Load : Attribute
+	/// <summary>
+	/// Mark members that should be excluded.
+	/// Private fields and all properties are excluded by default.
+	/// </summary>
+	public class Exclude : Attribute
 	{
+	}
+
+
+	[Obsolete( "Use the Exclude attribute instead." )]
+	public sealed class Skip : Exclude
+	{
+	}
+
+
+	public class AfterDecode : Attribute
+	{
+	}
+
+
+	[Obsolete( "Use the AfterDecode attribute instead." )]
+	public sealed class Load : AfterDecode
+	{
+	}
+
+
+	public sealed class DecodeException : Exception
+	{
+		public DecodeException( string message )
+			: base( message )
+		{
+		}
+
+
+		public DecodeException( string message, Exception innerException )
+			: base( message, innerException )
+		{
+		}
 	}
 
 
 	public static class JSON
 	{
+		static readonly Type includeAttrType = typeof(Include);
+		static readonly Type excludeAttrType = typeof(Exclude);
+
+
 		public static Variant Load( string json )
 		{
 			if (json == null)
@@ -32,7 +74,7 @@ namespace TinyJSON
 		}
 
 
-		public static string Dump( object data, EncodeOptions options = EncodeOptions.Default )
+		public static string Dump( object data, EncodeOptions options = EncodeOptions.None )
 		{
 			return Encoder.Encode( data, options );
 		}
@@ -93,8 +135,33 @@ namespace TinyJSON
 
 			if (type.IsArray)
 			{
-				var makeFunc = decodeArrayMethod.MakeGenericMethod( new Type[] { type.GetElementType() } );
-				return (T) makeFunc.Invoke( null, new object[] { data } );
+				if (type.GetArrayRank() == 1)
+				{
+					var makeFunc = decodeArrayMethod.MakeGenericMethod( new Type[] { type.GetElementType() } );
+					return (T) makeFunc.Invoke( null, new object[] { data } );
+				}
+				else
+				{
+					var arrayData = data as ProxyArray;
+					var arrayRank = type.GetArrayRank();
+					var rankLengths = new int[arrayRank];
+					if (arrayData.CanBeMultiRankArray( rankLengths ))
+					{
+						var array = Array.CreateInstance( type.GetElementType(), rankLengths ); 
+						var makeFunc = decodeMultiRankArrayMethod.MakeGenericMethod( new Type[] { type.GetElementType() } );
+						try
+						{
+							makeFunc.Invoke( null, new object[] { arrayData, array, 1, rankLengths } );
+						}
+						catch (Exception e)
+						{
+							throw new DecodeException( "Error decoding multidimensional array. Did you try to decode into an array of incompatible rank or element type?", e );
+						}
+						return (T) Convert.ChangeType( array, typeof(T) );
+					}
+					throw new DecodeException( "Error decoding multidimensional array; JSON data doesn't seem fit this structure." );
+					return default(T);
+				}
 			}
 
 			if (typeof(IList).IsAssignableFrom( type ))
@@ -146,13 +213,27 @@ namespace TinyJSON
 			}
 
 
-			// Now decode each field, except for those tagged with [Skip] attribute.
+			// Now decode fields and properties.
 			foreach (var pair in data as ProxyObject)
 			{
 				var field = type.GetField( pair.Key, instanceBindingFlags );
 				if (field != null)
 				{
-					if (!Attribute.GetCustomAttributes( field ).AnyOfType( typeof(Skip) ))
+					var shouldDecode = field.IsPublic;
+					foreach (var attribute in Attribute.GetCustomAttributes( field ))
+					{
+						if (excludeAttrType.IsAssignableFrom( attribute.GetType() ))
+						{
+							shouldDecode = false;
+						}
+
+						if (includeAttrType.IsAssignableFrom( attribute.GetType() ))
+						{
+							shouldDecode = true;
+						}
+					}
+
+					if (shouldDecode)
 					{
 						var makeFunc = decodeTypeMethod.MakeGenericMethod( new Type[] { field.FieldType } );
 						if (type.IsValueType)
@@ -169,12 +250,33 @@ namespace TinyJSON
 						}
 					}
 				}
+
+				var property = type.GetProperty( pair.Key, instanceBindingFlags );
+				if (property != null)
+				{
+					if (property.CanWrite && property.GetCustomAttributes().AnyOfType( includeAttrType ))
+					{
+						var makeFunc = decodeTypeMethod.MakeGenericMethod( new Type[] { property.PropertyType } );
+						if (type.IsValueType)
+						{
+							// Type is a struct.
+							var instanceRef = (object) instance;
+							property.SetValue( instanceRef, makeFunc.Invoke( null, new object[] { pair.Value } ) );
+							instance = (T) instanceRef;
+						}
+						else
+						{
+							// Type is a class.
+							property.SetValue( instance, makeFunc.Invoke( null, new object[] { pair.Value } ) );
+						}
+					}
+				}
 			}
 
-			// Invoke methods tagged with [Load] attribute.
+			// Invoke methods tagged with [AfterDecode] attribute.
 			foreach (var method in type.GetMethods( instanceBindingFlags ))
 			{
-				if (method.GetCustomAttributes( false ).AnyOfType( typeof(Load) ))
+				if (method.GetCustomAttributes( false ).AnyOfType( typeof(AfterDecode) ))
 				{
 					if (method.GetParameters().Length == 0)
 					{
@@ -235,12 +337,31 @@ namespace TinyJSON
 		}
 
 
+		private static void DecodeMultiRankArray<T>( ProxyArray arrayData, Array array, int arrayRank, int[] indices )
+		{
+			var count = arrayData.Count;
+			for (int i = 0; i < count; i++)
+			{
+				indices[arrayRank - 1] = i;
+				if (arrayRank < array.Rank)
+				{
+					DecodeMultiRankArray<T>( arrayData[i] as ProxyArray, array, arrayRank + 1, indices );
+				}
+				else
+				{
+					array.SetValue( DecodeType<T>( arrayData[i] ), indices );
+				}
+			}
+		}
+
+
 		private static BindingFlags instanceBindingFlags = BindingFlags.Public | BindingFlags.NonPublic | BindingFlags.Instance;
 		private static BindingFlags staticBindingFlags = BindingFlags.Public | BindingFlags.NonPublic | BindingFlags.Static;
 		private static MethodInfo decodeTypeMethod = typeof(JSON).GetMethod( "DecodeType", staticBindingFlags );
 		private static MethodInfo decodeListMethod = typeof(JSON).GetMethod( "DecodeList", staticBindingFlags );
 		private static MethodInfo decodeDictionaryMethod = typeof(JSON).GetMethod( "DecodeDictionary", staticBindingFlags );
 		private static MethodInfo decodeArrayMethod = typeof(JSON).GetMethod( "DecodeArray", staticBindingFlags );
+		private static MethodInfo decodeMultiRankArrayMethod = typeof(JSON).GetMethod( "DecodeMultiRankArray", staticBindingFlags );
 
 
 		private static void SupportTypeForAOT<T>()

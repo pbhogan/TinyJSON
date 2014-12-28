@@ -6,10 +6,13 @@ TinyJSON is a simple JSON library for C# that strives for ease of use.
 
 * Transmogrify objects into JSON and back again.
 * Uses reflection to dump and load object graphs automagically.
-* Supports primitives, classes, structs, enums, lists and dictionaries.
+* Supports primitives, classes, structs, enums, lists, dictionaries and arrays.
+* Supports single dimensional arrays, multidimensional arrays and jagged arrays.
 * Parsed data uses proxy variants that can be implicitly cast to primitive types for cleaner code.
 * Numeric types are handled without fuss.
 * Optional pretty printing JSON output.
+* Polymorphic classes supported with a type hint encoded into the JSON.
+* Optionally encode properties and private fields.
 * Unit tested.
 
 ## Usage
@@ -22,7 +25,7 @@ namespace TinyJSON
 	public static class JSON
 	{
 		public static Variant Load( string json );
-		public static string Dump( object data, bool prettyPrint = false );
+		public static string Dump( object data, EncodeOptions = EncodeOptions.None );
 		public static void MakeInto<T>( Variant data, out T item );
 	}
 }
@@ -67,13 +70,13 @@ class TestClass
 	public TestEnum type;
 	public List<TestStruct> data = new List<TestStruct>();
 
-	[Skip]
-	public int _ingnored;
+	[Exclude]
+	public int _ignored;
 
-	[Load]
-	public void OnLoad()
+	[AfterDecode]
+	public void AfterEncode()
 	{
-		Console.WriteLine( "Load callback fired!" );
+		Console.WriteLine( "AfterDecode callback fired!" );
 	}
 }
 ```
@@ -132,7 +135,20 @@ JSON.Load( json ).Make( out testClass );
 testClass = JSON.Load( json ).Make<Data>();
 ```
 
-Finally, you'll notice that `TestClass` has a method `OnLoad()` which has the `TinyJSON.Load` attribute. This method will be called *after* the object has been fully deserialized. This is useful when some further initialization logic is required.
+Finally, you'll notice that `TestClass` has a method `AfterEncode()` which has the `TinyJSON.AfterEncode` attribute. This method will be called *after* the object has been fully deserialized. This is useful when some further initialization logic is required.
+
+By default, only public fields are encoded, not properties or private fields. You can tag any field or property to be included with the `TinyJSON.Include` attribute, or force a public field to be excluded with the `TinyJSON.Exclude` attribute.
+
+## Type Hinting
+
+When decoding polymorphic types, TinyJSON has no way of knowing which subclass to instantiate unless a type hint is included. So, by default, TinyJSON will add a key named `@type` to each encoded object with the fully qualified type of the object.
+
+## Encode Options
+
+Two options are currently available for JSON encoding, and can be passed in as a second parameter to `JSON.Dump()`.
+
+* `EncodeOptions.PrettyPrint` will output nicely formatted JSON to make it more readable.
+* `EncodeOptions.NoTypeHints` will disable the outputting of type hints into the JSON output. This may be desirable if you plan to read the JSON into another application that might choke on the type information.
 
 ## Using Variants
 
@@ -158,7 +174,7 @@ foreach (var pair in dict as ProxyObject)
 
 This project was developed with pain elimination and lightweight size in mind. That said, it should be able able to handle reasonable amounts of reasonable data at reasonable speeds.
 
-My primary use case for this library is with Mono and Unity3D (version 4), so compatibility is focused there, though it should work with most modern C# environments.
+My primary use case for this library is with Mono and Unity3D (currently version 4), so compatibility is focused there, though it should work with most modern C# environments.
 
 ## Meta
 

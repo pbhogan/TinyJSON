@@ -7,23 +7,23 @@ using System.Collections.Generic;
 [TestFixture]
 public class TestClassType
 {
-	public static bool loadCallbackFired = false;
+	public static bool encodeCallbackFired = false;
 
 	class TestClass
 	{
 		public int x;
 		public int y;
 
-		[Skip] 
+		[Exclude] 
 		public int z;
 
 		public List<int> list;
 
 
-		[Load]
-		public void OnLoad()
+		[AfterDecode]
+		public void AfterDecode()
 		{
-			TestClassType.loadCallbackFired = true;
+			TestClassType.encodeCallbackFired = true;
 		}
 	}
 
@@ -44,7 +44,7 @@ public class TestClassType
 		var testClass = new TestClass() { x = 5, y = 7, z = 0 };
 		testClass.list = new List<int>() { { 3 }, { 1 }, { 4 } };
 
-		Assert.AreEqual( "{\"x\":5,\"y\":7,\"list\":[3,1,4]}", JSON.Dump( testClass, EncodeOptions.None ) );
+		Assert.AreEqual( "{\"x\":5,\"y\":7,\"list\":[3,1,4]}", JSON.Dump( testClass, EncodeOptions.NoTypeHints ) );
 	}
 
 
@@ -62,7 +62,7 @@ public class TestClassType
 		1,
 		4
 	]
-}", JSON.Dump( testClass, EncodeOptions.PrettyPrint ) );
+}", JSON.Dump( testClass, EncodeOptions.PrettyPrint | EncodeOptions.NoTypeHints ) );
 	}
 
 
@@ -80,7 +80,7 @@ public class TestClassType
 		Assert.AreEqual( 1, testClass.list[1] );
 		Assert.AreEqual( 4, testClass.list[2] );
 
-		Assert.IsTrue( loadCallbackFired );
+		Assert.IsTrue( encodeCallbackFired );
 	}
 
 }

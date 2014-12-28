@@ -8,6 +8,9 @@ namespace TinyJSON
 {
 	public sealed class Encoder
 	{
+		static readonly Type includeAttrType = typeof(Include);
+		static readonly Type excludeAttrType = typeof(Exclude);
+
 		StringBuilder builder;
 		EncodeOptions options;
 		int indent;
@@ -21,7 +24,7 @@ namespace TinyJSON
 		}
 
 
-		public static string Encode( object obj, EncodeOptions options = EncodeOptions.Default )
+		public static string Encode( object obj, EncodeOptions options = EncodeOptions.None )
 		{
 			var instance = new Encoder( options );
 			instance.EncodeValue( obj );
@@ -29,7 +32,7 @@ namespace TinyJSON
 		}
 
 
-		bool PrettyPrint
+		bool PrettyPrintEnabled
 		{
 			get
 			{
@@ -38,17 +41,18 @@ namespace TinyJSON
 		}
 
 
-		bool TypeHint
+		bool TypeHintsEnabled
 		{
 			get
 			{
-				return ((options & EncodeOptions.TypeHint) == EncodeOptions.TypeHint);
+				return ((options & EncodeOptions.NoTypeHints) != EncodeOptions.NoTypeHints);
 			}
 		}
 
 
 		void EncodeValue( object value )
 		{
+			Array asArray;
 			IList asList;
 			IDictionary asDict;
 			string asString;
@@ -71,6 +75,11 @@ namespace TinyJSON
 			if (value is Enum)
 			{
 				EncodeString( value.ToString() );
+			}
+			else
+			if ((asArray = value as Array) != null)
+			{
+				EncodeArray( asArray );
 			}
 			else
 			if ((asList = value as IList) != null)
@@ -96,14 +105,14 @@ namespace TinyJSON
 
 		void EncodeObject( object value )
 		{
-			AppendOpenBrace();
-
 			var type = value.GetType();
 
-			var firstItem = !TypeHint;
-			if (TypeHint)
+			AppendOpenBrace();
+
+			var firstItem = !TypeHintsEnabled;
+			if (TypeHintsEnabled)
 			{
-				if (PrettyPrint)
+				if (PrettyPrintEnabled)
 				{
 					AppendIndent();
 				}
@@ -116,12 +125,39 @@ namespace TinyJSON
 			var fields = type.GetFields( BindingFlags.Public | BindingFlags.NonPublic | BindingFlags.Instance );
 			foreach (var field in fields)
 			{
-				if (!Attribute.GetCustomAttributes( field ).AnyOfType( typeof(Skip) ))
+				var shouldEncode = field.IsPublic;
+				foreach (var attribute in field.GetCustomAttributes())
+				{
+					if (excludeAttrType.IsAssignableFrom( attribute.GetType() ))
+					{
+						shouldEncode = false;
+					}
+
+					if (includeAttrType.IsAssignableFrom( attribute.GetType() ))
+					{
+						shouldEncode = true;
+					}
+				}
+
+				if (shouldEncode)
 				{
 					AppendComma( firstItem );
 					EncodeString( field.Name );
 					AppendColon();
 					EncodeValue( field.GetValue( value ) );
+					firstItem = false;
+				}
+			}
+
+			var properties = type.GetProperties( BindingFlags.Public | BindingFlags.NonPublic | BindingFlags.Instance );
+			foreach (var property in properties)
+			{
+				if (property.CanRead && property.GetCustomAttributes().AnyOfType( includeAttrType ))
+				{
+					AppendComma( firstItem );
+					EncodeString( property.Name );
+					AppendColon();
+					EncodeValue( property.GetValue( value ) );
 					firstItem = false;
 				}
 			}
@@ -176,6 +212,51 @@ namespace TinyJSON
 				AppendCloseBracket();
 			}
 		}
+
+
+		void EncodeArray( Array value )
+		{
+			if (value.Rank == 1)
+			{
+				EncodeList( value );
+			}
+			else
+			{
+				var indices = new int[value.Rank];
+				EncodeArrayRank( value, 0, indices );
+			}
+		}
+
+
+		void EncodeArrayRank( Array value, int rank, int[] indices )
+		{
+			AppendOpenBracket();
+
+			var min = value.GetLowerBound( rank );
+			var max = value.GetUpperBound( rank );
+
+			if (rank == value.Rank - 1)
+			{
+				for (int i = min; i <= max; i++)
+				{
+					indices[rank] = i;
+					AppendComma( i == min );
+					EncodeValue( value.GetValue( indices ) );
+				}
+			}
+			else
+			{
+				for (int i = min; i <= max; i++)
+				{
+					indices[rank] = i;
+					AppendComma( i == min );
+					EncodeArrayRank( value, rank + 1, indices );
+				}
+			}
+
+			AppendCloseBracket();
+		}
+
 
 
 		void EncodeString( string value )
@@ -271,7 +352,7 @@ namespace TinyJSON
 		{
 			builder.Append( '{' );
 
-			if (PrettyPrint)
+			if (PrettyPrintEnabled)
 			{
 				builder.Append( '\n' );
 				indent++;
@@ -281,7 +362,7 @@ namespace TinyJSON
 
 		void AppendCloseBrace()
 		{
-			if (PrettyPrint)
+			if (PrettyPrintEnabled)
 			{
 				builder.Append( '\n' );
 				indent--;
@@ -296,7 +377,7 @@ namespace TinyJSON
 		{
 			builder.Append( '[' );
 
-			if (PrettyPrint)
+			if (PrettyPrintEnabled)
 			{
 				builder.Append( '\n' );
 				indent++;
@@ -306,7 +387,7 @@ namespace TinyJSON
 
 		void AppendCloseBracket()
 		{
-			if (PrettyPrint)
+			if (PrettyPrintEnabled)
 			{
 				builder.Append( '\n' );
 				indent--;
@@ -323,13 +404,13 @@ namespace TinyJSON
 			{
 				builder.Append( ',' );
 
-				if (PrettyPrint)
+				if (PrettyPrintEnabled)
 				{
 					builder.Append( '\n' );
 				}
 			}
 
-			if (PrettyPrint)
+			if (PrettyPrintEnabled)
 			{
 				AppendIndent();
 			}
@@ -340,7 +421,7 @@ namespace TinyJSON
 		{
 			builder.Append( ':' );
 
-			if (PrettyPrint)
+			if (PrettyPrintEnabled)
 			{
 				builder.Append( ' ' );
 			}

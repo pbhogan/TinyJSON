@@ -14,10 +14,10 @@ public class TestStructType
 		public int x;
 		public int y;
 
-		[Skip] 
+		[Exclude] 
 		public int z;
 
-		[Load]
+		[AfterDecode]
 		public void OnLoad()
 		{
 			TestStructType.loadCallbackFired = true;
