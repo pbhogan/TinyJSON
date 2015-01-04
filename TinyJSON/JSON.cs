@@ -160,7 +160,9 @@ namespace TinyJSON
 						return (T) Convert.ChangeType( array, typeof(T) );
 					}
 					throw new DecodeException( "Error decoding multidimensional array; JSON data doesn't seem fit this structure." );
+					#pragma warning disable 0162
 					return default(T);
+					#pragma warning restore 0162
 				}
 			}
 
@@ -220,7 +222,7 @@ namespace TinyJSON
 				if (field != null)
 				{
 					var shouldDecode = field.IsPublic;
-					foreach (var attribute in Attribute.GetCustomAttributes( field ))
+					foreach (var attribute in field.GetCustomAttributes( true ))
 					{
 						if (excludeAttrType.IsAssignableFrom( attribute.GetType() ))
 						{
@@ -254,20 +256,20 @@ namespace TinyJSON
 				var property = type.GetProperty( pair.Key, instanceBindingFlags );
 				if (property != null)
 				{
-					if (property.CanWrite && property.GetCustomAttributes().AnyOfType( includeAttrType ))
+					if (property.CanWrite && property.GetCustomAttributes( false ).AnyOfType( includeAttrType ))
 					{
 						var makeFunc = decodeTypeMethod.MakeGenericMethod( new Type[] { property.PropertyType } );
 						if (type.IsValueType)
 						{
 							// Type is a struct.
 							var instanceRef = (object) instance;
-							property.SetValue( instanceRef, makeFunc.Invoke( null, new object[] { pair.Value } ) );
+							property.SetValue( instanceRef, makeFunc.Invoke( null, new object[] { pair.Value } ), null );
 							instance = (T) instanceRef;
 						}
 						else
 						{
 							// Type is a class.
-							property.SetValue( instance, makeFunc.Invoke( null, new object[] { pair.Value } ) );
+							property.SetValue( instance, makeFunc.Invoke( null, new object[] { pair.Value } ), null );
 						}
 					}
 				}

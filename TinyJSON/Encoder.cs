@@ -126,7 +126,7 @@ namespace TinyJSON
 			foreach (var field in fields)
 			{
 				var shouldEncode = field.IsPublic;
-				foreach (var attribute in field.GetCustomAttributes())
+				foreach (var attribute in field.GetCustomAttributes( true ))
 				{
 					if (excludeAttrType.IsAssignableFrom( attribute.GetType() ))
 					{
@@ -152,12 +152,12 @@ namespace TinyJSON
 			var properties = type.GetProperties( BindingFlags.Public | BindingFlags.NonPublic | BindingFlags.Instance );
 			foreach (var property in properties)
 			{
-				if (property.CanRead && property.GetCustomAttributes().AnyOfType( includeAttrType ))
+				if (property.CanRead && property.GetCustomAttributes( false ).AnyOfType( includeAttrType ))
 				{
 					AppendComma( firstItem );
 					EncodeString( property.Name );
 					AppendColon();
-					EncodeValue( property.GetValue( value ) );
+					EncodeValue( property.GetValue( value, null ) );
 					firstItem = false;
 				}
 			}
