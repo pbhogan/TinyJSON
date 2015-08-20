@@ -57,6 +57,13 @@ namespace TestProgram
 		}
 
 
+		[BeforeEncode]
+		public void BeforeEncode()
+		{
+			Console.WriteLine( "BeforeEncode callback fired!" );
+		}
+
+
 		[AfterDecode]
 		public void AfterDecode()
 		{
@@ -89,7 +96,7 @@ namespace TestProgram
 			JSON.MakeInto( variant, out array );
 			Console.WriteLine( JSON.Dump( array ) );
 
-			/*
+
 			var array0 = new int[] { 1, 2, 3 };
 			Console.WriteLine( JSON.Dump( array0 ) );
 
@@ -101,9 +108,8 @@ namespace TestProgram
 
 			var array3 = new int[][] { new int[] { 1, 2, 3 }, new int[] { 4, 5, 6 } };
 			Console.WriteLine( JSON.Dump( array3 ) );
-			/**/
 
-			/*
+
 			var testClass = new TestClass();
 			testClass.Init();
 			testClass.data.Add( new TestStruct() { x = 1, y = 2 } );
@@ -115,9 +121,8 @@ namespace TestProgram
 
 			testClass = JSON.Load( testClassJson ).Make<BaseClass>() as TestClass;
 			Console.WriteLine( JSON.Dump( testClass, EncodeOptions.PrettyPrint ) );
-			/**/
 
-			/*
+
 			var list = JSON.Load( "[1,2,3]" );
 			foreach (var item in list as ProxyArray)
 			{
@@ -131,7 +136,6 @@ namespace TestProgram
 				float value = pair.Value;
 				Console.WriteLine( pair.Key + " = " + value );
 			}
-			/**/
 		}
 	}
 }
