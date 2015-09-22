@@ -37,6 +37,15 @@ namespace TinyJSON
 
 
 	/// <summary>
+	/// Mark methods to be called before an object is encoded.
+	/// </summary>
+	[AttributeUsage( AttributeTargets.Method )]
+	public class BeforeEncode : Attribute
+	{
+	}
+
+
+	/// <summary>
 	/// Mark members to force type hinting even when EncodeOptions.NoTypeHints is set.
 	/// </summary>
 	[AttributeUsage( AttributeTargets.Field | AttributeTargets.Property )]
@@ -97,6 +106,25 @@ namespace TinyJSON
 
 		public static string Dump( object data, EncodeOptions options )
 		{
+			// Invoke methods tagged with [BeforeEncode] attribute.
+			if (data != null)
+			{
+				var type = data.GetType();
+				if (!(type.IsEnum || type.IsPrimitive || type.IsArray))
+				{
+					foreach (var method in type.GetMethods( instanceBindingFlags ))
+					{
+						if (method.GetCustomAttributes( false ).AnyOfType( typeof(BeforeEncode) ))
+						{
+							if (method.GetParameters().Length == 0)
+							{
+								method.Invoke( data, null );
+							}
+						}
+					}
+				}
+			}
+
 			return Encoder.Encode( data, options );
 		}
 

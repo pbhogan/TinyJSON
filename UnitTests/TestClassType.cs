@@ -7,7 +7,9 @@ using System.Collections.Generic;
 [TestFixture]
 public class TestClassType
 {
-	public static bool encodeCallbackFired = false;
+	public static bool afterDecodeCallbackFired = false;
+	public static bool beforeEncodeCallbackFired = false;
+
 
 	class TestClass
 	{
@@ -23,7 +25,14 @@ public class TestClassType
 		[AfterDecode]
 		public void AfterDecode()
 		{
-			TestClassType.encodeCallbackFired = true;
+			TestClassType.afterDecodeCallbackFired = true;
+		}
+
+
+		[BeforeEncode]
+		public void BeforeDecode()
+		{
+			TestClassType.beforeEncodeCallbackFired = true;
 		}
 	}
 
@@ -35,6 +44,8 @@ public class TestClassType
 		testClass.list = new List<int>() { { 3 }, { 1 }, { 4 } };
 
 		Assert.AreEqual( "{\"@type\":\"" + testClass.GetType().FullName + "\",\"x\":5,\"y\":7,\"list\":[3,1,4]}", JSON.Dump( testClass ) );
+
+		Assert.IsTrue( beforeEncodeCallbackFired );
 	}
 
 
@@ -80,7 +91,7 @@ public class TestClassType
 		Assert.AreEqual( 1, testClass.list[1] );
 		Assert.AreEqual( 4, testClass.list[2] );
 
-		Assert.IsTrue( encodeCallbackFired );
+		Assert.IsTrue( afterDecodeCallbackFired );
 	}
 
 
