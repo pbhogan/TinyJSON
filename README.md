@@ -73,8 +73,14 @@ class TestClass
 	[Exclude]
 	public int _ignored;
 
+	[BeforeEncode]
+	public void BeforeEncode()
+	{
+		Console.WriteLine( "BeforeEncode callback fired!" );
+	}
+
 	[AfterDecode]
-	public void AfterEncode()
+	public void AfterDecode()
 	{
 		Console.WriteLine( "AfterDecode callback fired!" );
 	}
@@ -135,7 +141,7 @@ JSON.Load( json ).Make( out testClass );
 testClass = JSON.Load( json ).Make<Data>();
 ```
 
-Finally, you'll notice that `TestClass` has a method `AfterEncode()` which has the `TinyJSON.AfterEncode` attribute. This method will be called *after* the object has been fully deserialized. This is useful when some further initialization logic is required.
+Finally, you'll notice that `TestClass` has the methods `BeforeEncode()` and `AfterDecode()` which have the `TinyJSON.BeforeEncode` and `TinyJSON.AfterDecode` attributes. These methods will be called *before* the object starts being serialized and *after* the object has been fully deserialized. This is useful when some further preparation or initialization logic is required.
 
 By default, only public fields are encoded, not properties or private fields. You can tag any field or property to be included with the `TinyJSON.Include` attribute, or force a public field to be excluded with the `TinyJSON.Exclude` attribute.
 
