@@ -31,6 +31,10 @@ namespace TinyJSON
 	}
 
 
+	public class BeforeEncode : Attribute
+	{
+	}
+
 	public class AfterDecode : Attribute
 	{
 	}
@@ -76,6 +80,23 @@ namespace TinyJSON
 
 		public static string Dump( object data, EncodeOptions options = EncodeOptions.None )
 		{
+			var type = data.GetType();
+
+			// Invoke methods tagged with [BeforeEncode] attribute.
+			if (!( type.IsEnum || type.IsPrimitive || type == typeof(string) || type == typeof(decimal) || type.IsArray || typeof(IList).IsAssignableFrom( type ) || typeof(IDictionary).IsAssignableFrom( type ) ))
+			{
+				foreach (var method in type.GetMethods( instanceBindingFlags ))
+				{
+					if (method.GetCustomAttributes( false ).AnyOfType( typeof(BeforeEncode) ))
+					{
+						if (method.GetParameters().Length == 0)
+						{
+							method.Invoke( data, null );
+						}
+					}
+				}
+			}
+
 			return Encoder.Encode( data, options );
 		}
 
@@ -366,7 +387,7 @@ namespace TinyJSON
 		private static MethodInfo decodeMultiRankArrayMethod = typeof(JSON).GetMethod( "DecodeMultiRankArray", staticBindingFlags );
 
 
-		private static void SupportTypeForAOT<T>()
+		public static void SupportTypeForAOT<T>()
 		{
 			DecodeType<T>( null );
 			DecodeList<T>( null );
@@ -385,8 +406,9 @@ namespace TinyJSON
 		}
 
 
-		private static void SupportValueTypesForAOT()
+		public static void SupportValueTypesForAOT()
 		{
+			SupportTypeForAOT<Byte>();
 			SupportTypeForAOT<Int16>();
 			SupportTypeForAOT<UInt16>();
 			SupportTypeForAOT<Int32>();
