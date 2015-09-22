@@ -384,7 +384,7 @@ namespace TinyJSON
 		private static MethodInfo decodeMultiRankArrayMethod = typeof(JSON).GetMethod( "DecodeMultiRankArray", staticBindingFlags );
 
 
-		private static void SupportTypeForAOT<T>()
+		public static void SupportTypeForAOT<T>()
 		{
 			DecodeType<T>( null );
 			DecodeList<T>( null );
