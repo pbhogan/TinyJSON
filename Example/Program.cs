@@ -30,6 +30,8 @@ namespace TestProgram
 	{
 		public string name;
 		public TestEnum type;
+
+		[TypeHint]
 		public List<TestStruct> data = new List<TestStruct>();
 
 		#pragma warning disable 0414
@@ -84,10 +86,18 @@ namespace TestProgram
 	{
 		public static void Main( string[] args )
 		{
+			var testClass = new TestClass();
+			testClass.Init();
+			testClass.data.Add( new TestStruct() { x = 1, y = 2 } );
+			var testClassJson = JSON.Dump( (BaseClass) testClass, EncodeOptions.PrettyPrint | EncodeOptions.NoTypeHints );
+			Console.WriteLine( testClassJson );
+
+			/*
 			int[,,] array;
 			var variant = JSON.Load( "[[[1,2],[3,4]],[[5,6],[7,8]],[[9,0],[1,2]]]" );
 			JSON.MakeInto( variant, out array );
 			Console.WriteLine( JSON.Dump( array ) );
+			/**/
 
 			/*
 			var array0 = new int[] { 1, 2, 3 };

@@ -83,5 +83,23 @@ public class TestClassType
 		Assert.IsTrue( encodeCallbackFired );
 	}
 
+
+	class InnerClass
+	{
+	}
+
+	class OuterClass
+	{
+		[TypeHint]
+		public InnerClass inner;
+	}
+
+	[Test]
+	public void TestDumpOuterNoTypeHint()
+	{
+		var outerClass = new OuterClass();
+		outerClass.inner = new InnerClass();
+		Assert.AreEqual( "{\"inner\":{\"@type\":\"" + typeof(InnerClass).FullName + "\"}}", JSON.Dump( outerClass, EncodeOptions.NoTypeHints ) );
+	}
 }
 

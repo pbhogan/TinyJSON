@@ -11,6 +11,7 @@ namespace TinyJSON
 	/// Mark members that should be included. 
 	/// Public fields are included by default.
 	/// </summary>
+	[AttributeUsage( AttributeTargets.Field | AttributeTargets.Property )]
 	public sealed class Include : Attribute
 	{
 	}
@@ -20,18 +21,29 @@ namespace TinyJSON
 	/// Mark members that should be excluded.
 	/// Private fields and all properties are excluded by default.
 	/// </summary>
+	[AttributeUsage( AttributeTargets.Field | AttributeTargets.Property )]
 	public class Exclude : Attribute
+	{
+	}
+
+
+	/// <summary>
+	/// Mark methods to be called after an object is decoded.
+	/// </summary>
+	[AttributeUsage( AttributeTargets.Method )]
+	public class AfterDecode : Attribute
+	{
+	}
+
+
+	[AttributeUsage( AttributeTargets.Field | AttributeTargets.Property )]
+	public class TypeHint : Attribute
 	{
 	}
 
 
 	[Obsolete( "Use the Exclude attribute instead." )]
 	public sealed class Skip : Exclude
-	{
-	}
-
-
-	public class AfterDecode : Attribute
 	{
 	}
 
@@ -74,7 +86,13 @@ namespace TinyJSON
 		}
 
 
-		public static string Dump( object data, EncodeOptions options = EncodeOptions.None )
+		public static string Dump( object data )
+		{
+			return Dump( data, EncodeOptions.None );
+		}
+
+
+		public static string Dump( object data, EncodeOptions options )
 		{
 			return Encoder.Encode( data, options );
 		}

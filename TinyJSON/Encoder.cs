@@ -10,6 +10,7 @@ namespace TinyJSON
 	{
 		static readonly Type includeAttrType = typeof(Include);
 		static readonly Type excludeAttrType = typeof(Exclude);
+		static readonly Type typeHintAttrType = typeof(TypeHint);
 
 		StringBuilder builder;
 		EncodeOptions options;
@@ -24,10 +25,16 @@ namespace TinyJSON
 		}
 
 
-		public static string Encode( object obj, EncodeOptions options = EncodeOptions.None )
+		public static string Encode( object obj )
+		{
+			return Encode( obj, EncodeOptions.None );
+		}
+
+
+		public static string Encode( object obj, EncodeOptions options )
 		{
 			var instance = new Encoder( options );
-			instance.EncodeValue( obj );
+			instance.EncodeValue( obj, false );
 			return instance.builder.ToString();
 		}
 
@@ -50,7 +57,7 @@ namespace TinyJSON
 		}
 
 
-		void EncodeValue( object value )
+		void EncodeValue( object value, bool forceTypeHint )
 		{
 			Array asArray;
 			IList asList;
@@ -79,17 +86,17 @@ namespace TinyJSON
 			else
 			if ((asArray = value as Array) != null)
 			{
-				EncodeArray( asArray );
+				EncodeArray( asArray, forceTypeHint );
 			}
 			else
 			if ((asList = value as IList) != null)
 			{
-				EncodeList( asList );
+				EncodeList( asList, forceTypeHint );
 			}
 			else
 			if ((asDict = value as IDictionary) != null)
 			{
-				EncodeDictionary( asDict );
+				EncodeDictionary( asDict, forceTypeHint );
 			}
 			else
 			if (value is char)
@@ -98,19 +105,21 @@ namespace TinyJSON
 			}
 			else
 			{
-				EncodeOther( value );
+				EncodeOther( value, forceTypeHint );
 			}
 		}
 
 
-		void EncodeObject( object value )
+		void EncodeObject( object value, bool forceTypeHint )
 		{
 			var type = value.GetType();
 
 			AppendOpenBrace();
 
-			var firstItem = !TypeHintsEnabled;
-			if (TypeHintsEnabled)
+			forceTypeHint = forceTypeHint || TypeHintsEnabled;
+
+			var firstItem = !forceTypeHint;
+			if (forceTypeHint)
 			{
 				if (PrettyPrintEnabled)
 				{
@@ -125,6 +134,7 @@ namespace TinyJSON
 			var fields = type.GetFields( BindingFlags.Public | BindingFlags.NonPublic | BindingFlags.Instance );
 			foreach (var field in fields)
 			{
+				var shouldTypeHint = false;
 				var shouldEncode = field.IsPublic;
 				foreach (var attribute in field.GetCustomAttributes( true ))
 				{
@@ -137,6 +147,11 @@ namespace TinyJSON
 					{
 						shouldEncode = true;
 					}
+
+					if (typeHintAttrType.IsAssignableFrom( attribute.GetType() ))
+					{
+						shouldTypeHint = true;
+					}
 				}
 
 				if (shouldEncode)
@@ -144,7 +159,7 @@ namespace TinyJSON
 					AppendComma( firstItem );
 					EncodeString( field.Name );
 					AppendColon();
-					EncodeValue( field.GetValue( value ) );
+					EncodeValue( field.GetValue( value ), shouldTypeHint );
 					firstItem = false;
 				}
 			}
@@ -152,13 +167,31 @@ namespace TinyJSON
 			var properties = type.GetProperties( BindingFlags.Public | BindingFlags.NonPublic | BindingFlags.Instance );
 			foreach (var property in properties)
 			{
-				if (property.CanRead && property.GetCustomAttributes( false ).AnyOfType( includeAttrType ))
+				if (property.CanRead)
 				{
-					AppendComma( firstItem );
-					EncodeString( property.Name );
-					AppendColon();
-					EncodeValue( property.GetValue( value, null ) );
-					firstItem = false;
+					var shouldTypeHint = false;
+					var shouldEncode = false;
+					foreach (var attribute in property.GetCustomAttributes( true ))
+					{
+						if (includeAttrType.IsAssignableFrom( attribute.GetType() ))
+						{
+							shouldEncode = true;
+						}
+
+						if (typeHintAttrType.IsAssignableFrom( attribute.GetType() ))
+						{
+							shouldTypeHint = true;
+						}
+					}
+
+					if (shouldEncode)
+					{
+						AppendComma( firstItem );
+						EncodeString( property.Name );
+						AppendColon();
+						EncodeValue( property.GetValue( value, null ), shouldTypeHint );
+						firstItem = false;
+					}
 				}
 			}
 
@@ -166,7 +199,7 @@ namespace TinyJSON
 		}
 
 
-		void EncodeDictionary( IDictionary value )
+		void EncodeDictionary( IDictionary value, bool forceTypeHint )
 		{
 			if (value.Count == 0)
 			{
@@ -182,7 +215,7 @@ namespace TinyJSON
 					AppendComma( firstItem );
 					EncodeString( e.ToString() );
 					AppendColon();
-					EncodeValue( value[e] );
+					EncodeValue( value[e], forceTypeHint );
 					firstItem = false;
 				}
 
@@ -191,7 +224,7 @@ namespace TinyJSON
 		}
 
 
-		void EncodeList( IList value )
+		void EncodeList( IList value, bool forceTypeHint )
 		{
 			if (value.Count == 0)
 			{
@@ -205,7 +238,7 @@ namespace TinyJSON
 				foreach (object obj in value)
 				{
 					AppendComma( firstItem );
-					EncodeValue( obj );
+					EncodeValue( obj, forceTypeHint );
 					firstItem = false;
 				}
 
@@ -214,21 +247,21 @@ namespace TinyJSON
 		}
 
 
-		void EncodeArray( Array value )
+		void EncodeArray( Array value, bool forceTypeHint )
 		{
 			if (value.Rank == 1)
 			{
-				EncodeList( value );
+				EncodeList( value, forceTypeHint );
 			}
 			else
 			{
 				var indices = new int[value.Rank];
-				EncodeArrayRank( value, 0, indices );
+				EncodeArrayRank( value, 0, indices, forceTypeHint );
 			}
 		}
 
 
-		void EncodeArrayRank( Array value, int rank, int[] indices )
+		void EncodeArrayRank( Array value, int rank, int[] indices, bool forceTypeHint )
 		{
 			AppendOpenBracket();
 
@@ -241,7 +274,7 @@ namespace TinyJSON
 				{
 					indices[rank] = i;
 					AppendComma( i == min );
-					EncodeValue( value.GetValue( indices ) );
+					EncodeValue( value.GetValue( indices ), forceTypeHint );
 				}
 			}
 			else
@@ -250,7 +283,7 @@ namespace TinyJSON
 				{
 					indices[rank] = i;
 					AppendComma( i == min );
-					EncodeArrayRank( value, rank + 1, indices );
+					EncodeArrayRank( value, rank + 1, indices, forceTypeHint );
 				}
 			}
 
@@ -314,7 +347,7 @@ namespace TinyJSON
 		}
 
 
-		void EncodeOther( object value )
+		void EncodeOther( object value, bool forceTypeHint )
 		{
 			if (value is float ||
 			    value is double ||
@@ -332,7 +365,7 @@ namespace TinyJSON
 			}
 			else
 			{
-				EncodeObject( value );
+				EncodeObject( value, forceTypeHint );
 			}
 		}
 
