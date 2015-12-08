@@ -7,8 +7,6 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Example", "Example\Example.
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "UnitTests", "UnitTests\UnitTests.csproj", "{2CA10905-12EB-4550-9FCF-AEA9572E3B88}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "UnitTests-iOS", "UnitTests-iOS\UnitTests-iOS.csproj", "{68474823-7696-4182-9F29-C74148862803}"
-EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -37,22 +35,6 @@ Global
 		{2CA10905-12EB-4550-9FCF-AEA9572E3B88}.Release|iPhone.Build.0 = Release|Any CPU
 		{2CA10905-12EB-4550-9FCF-AEA9572E3B88}.Release|iPhoneSimulator.ActiveCfg = Release|Any CPU
 		{2CA10905-12EB-4550-9FCF-AEA9572E3B88}.Release|iPhoneSimulator.Build.0 = Release|Any CPU
-		{68474823-7696-4182-9F29-C74148862803}.Ad-Hoc|iPhone.ActiveCfg = Ad-Hoc|iPhone
-		{68474823-7696-4182-9F29-C74148862803}.Ad-Hoc|iPhone.Build.0 = Ad-Hoc|iPhone
-		{68474823-7696-4182-9F29-C74148862803}.AppStore|iPhone.ActiveCfg = AppStore|iPhone
-		{68474823-7696-4182-9F29-C74148862803}.AppStore|iPhone.Build.0 = AppStore|iPhone
-		{68474823-7696-4182-9F29-C74148862803}.Debug|Any CPU.ActiveCfg = Debug|iPhoneSimulator
-		{68474823-7696-4182-9F29-C74148862803}.Debug|Any CPU.Build.0 = Debug|iPhoneSimulator
-		{68474823-7696-4182-9F29-C74148862803}.Debug|iPhone.ActiveCfg = Debug|iPhone
-		{68474823-7696-4182-9F29-C74148862803}.Debug|iPhone.Build.0 = Debug|iPhone
-		{68474823-7696-4182-9F29-C74148862803}.Debug|iPhoneSimulator.ActiveCfg = Debug|iPhoneSimulator
-		{68474823-7696-4182-9F29-C74148862803}.Debug|iPhoneSimulator.Build.0 = Debug|iPhoneSimulator
-		{68474823-7696-4182-9F29-C74148862803}.Release|Any CPU.ActiveCfg = Release|iPhoneSimulator
-		{68474823-7696-4182-9F29-C74148862803}.Release|Any CPU.Build.0 = Release|iPhoneSimulator
-		{68474823-7696-4182-9F29-C74148862803}.Release|iPhone.ActiveCfg = Release|iPhone
-		{68474823-7696-4182-9F29-C74148862803}.Release|iPhone.Build.0 = Release|iPhone
-		{68474823-7696-4182-9F29-C74148862803}.Release|iPhoneSimulator.ActiveCfg = Release|iPhoneSimulator
-		{68474823-7696-4182-9F29-C74148862803}.Release|iPhoneSimulator.Build.0 = Release|iPhoneSimulator
 		{8BBC60F1-CEB1-40FC-904C-B681495ADAB6}.Ad-Hoc|iPhone.ActiveCfg = Debug|Any CPU
 		{8BBC60F1-CEB1-40FC-904C-B681495ADAB6}.Ad-Hoc|iPhone.Build.0 = Debug|Any CPU
 		{8BBC60F1-CEB1-40FC-904C-B681495ADAB6}.AppStore|iPhone.ActiveCfg = Debug|Any CPU
@@ -87,7 +69,6 @@ Global
 		{B7E22DAC-A8C9-4E8B-A7F7-F8336836CAFD}.Release|iPhoneSimulator.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(MonoDevelopProperties) = preSolution
-		StartupItem = Example\Example.csproj
 		Policies = $0
 		$0.TextStylePolicy = $1
 		$1.TabsToSpaces = False
@@ -132,5 +113,6 @@ Global
 		$2.inheritsSet = Mono
 		$2.inheritsScope = text/x-csharp
 		$2.scope = text/x-csharp
+		StartupItem = Example\Example.csproj
 	EndGlobalSection
 EndGlobal

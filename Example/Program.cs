@@ -86,11 +86,23 @@ namespace TestProgram
 	{
 		public static void Main( string[] args )
 		{
+			var dict = new Dictionary<TestEnum,String>();
+//			dict[TestEnum.Thing1] = "Thing1";
+//			dict[TestEnum.Thing2] = "Thing2";
+//			dict[TestEnum.Thing3] = "Thing3";
+//			var json = JSON.Dump( dict, EncodeOptions.PrettyPrint );
+			var json = "{\"Thing1\":\"Thing1\",\"Thing2\":\"Thing2\",\"Thing3\":\"Thing3\"}";
+			Console.WriteLine( json );
+			dict = JSON.Load( json ).Make<Dictionary<TestEnum,String>>();
+			Console.WriteLine( JSON.Dump( dict ) );
+
+			/*
 			var testClass = new TestClass();
 			testClass.Init();
 			testClass.data.Add( new TestStruct() { x = 1, y = 2 } );
 			var testClassJson = JSON.Dump( (BaseClass) testClass, EncodeOptions.PrettyPrint | EncodeOptions.NoTypeHints );
 			Console.WriteLine( testClassJson );
+			/**/
 
 			/*
 			int[,,] array;

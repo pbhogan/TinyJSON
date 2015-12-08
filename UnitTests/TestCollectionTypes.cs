@@ -219,5 +219,29 @@ public class TestCollectionTypes
 		Assert.AreEqual( null, testEnum );
 	}
 
+
+	[Test]
+	public void TestDumpDictWithEnumKeys()
+	{
+		var dict = new Dictionary<TestEnum,String>();
+		dict[TestEnum.Thing1] = "Item 1";
+		dict[TestEnum.Thing2] = "Item 2";
+		dict[TestEnum.Thing3] = "Item 3";
+		Assert.AreEqual( "{\"Thing1\":\"Item 1\",\"Thing2\":\"Item 2\",\"Thing3\":\"Item 3\"}", JSON.Dump( dict ) );
+	}
+
+
+	[Test]
+	public void TestLoadDictWithEnumKeys()
+	{
+		var json = "{\"Thing1\":\"Item 1\",\"Thing2\":\"Item 2\",\"Thing3\":\"Item 3\"}";
+		var dict = JSON.Load( json ).Make<Dictionary<TestEnum,String>>();
+		Assert.AreNotEqual( null, dict );
+		Assert.AreEqual( 3, dict.Count );
+		Assert.AreEqual( "Item 1", dict[TestEnum.Thing1] );
+		Assert.AreEqual( "Item 2", dict[TestEnum.Thing2] );
+		Assert.AreEqual( "Item 3", dict[TestEnum.Thing3] );
+	}
+
 }
 
