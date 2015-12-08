@@ -360,10 +360,20 @@ namespace TinyJSON
 		private static Dictionary<K,V> DecodeDictionary<K,V>( Variant data )
 		{
 			var dict = new Dictionary<K,V>();
+			var keyType = typeof(K);
 
 			foreach (var pair in data as ProxyObject)
 			{
-				var k = (K) Convert.ChangeType( pair.Key, typeof(K) );
+				K k;
+
+				if (keyType.IsEnum) 
+				{
+					k = (K)Enum.Parse(keyType, pair.Key);
+				} 
+				else 
+				{
+					k = (K)Convert.ChangeType(pair.Key, keyType);
+				}
 				var v = DecodeType<V>( pair.Value );
 				dict.Add( k, v );
 			}
