@@ -4,6 +4,10 @@ using System.Collections.Generic;
 using System.Reflection;
 using System.Linq;
 
+#if ENABLE_IL2CPP
+using UnityEngine.Scripting;
+#endif
+
 
 namespace TinyJSON
 {
@@ -81,6 +85,9 @@ namespace TinyJSON
 	}
 
 
+	#if ENABLE_IL2CPP
+	[Preserve]
+	#endif
 	public static class JSON
 	{
 		static readonly Type includeAttrType = typeof(Include);
@@ -163,6 +170,9 @@ namespace TinyJSON
 		}
 
 
+		#if ENABLE_IL2CPP
+		[Preserve]
+		#endif
 		private static T DecodeType<T>( Variant data )
 		{
 			if (data == null)
@@ -344,6 +354,9 @@ namespace TinyJSON
 		}
 
 
+		#if ENABLE_IL2CPP
+		[Preserve]
+		#endif
 		private static List<T> DecodeList<T>( Variant data )
 		{
 			var list = new List<T>();
@@ -357,6 +370,9 @@ namespace TinyJSON
 		}
 
 
+		#if ENABLE_IL2CPP
+		[Preserve]
+		#endif
 		private static Dictionary<K,V> DecodeDictionary<K,V>( Variant data )
 		{
 			var dict = new Dictionary<K,V>();
@@ -373,6 +389,9 @@ namespace TinyJSON
 		}
 
 
+		#if ENABLE_IL2CPP
+		[Preserve]
+		#endif
 		private static T[] DecodeArray<T>( Variant data )
 		{
 			var arrayData = data as ProxyArray;
@@ -389,6 +408,9 @@ namespace TinyJSON
 		}
 
 
+		#if ENABLE_IL2CPP
+		[Preserve]
+		#endif
 		private static void DecodeMultiRankArray<T>( ProxyArray arrayData, Array array, int arrayRank, int[] indices )
 		{
 			var count = arrayData.Count;
@@ -416,6 +438,9 @@ namespace TinyJSON
 		private static MethodInfo decodeMultiRankArrayMethod = typeof(JSON).GetMethod( "DecodeMultiRankArray", staticBindingFlags );
 
 
+		#if ENABLE_IL2CPP
+		[Preserve]
+		#endif
 		public static void SupportTypeForAOT<T>()
 		{
 			DecodeType<T>( null );
@@ -435,6 +460,9 @@ namespace TinyJSON
 		}
 
 
+		#if ENABLE_IL2CPP
+		[Preserve]
+		#endif
 		private static void SupportValueTypesForAOT()
 		{
 			SupportTypeForAOT<Int16>();
