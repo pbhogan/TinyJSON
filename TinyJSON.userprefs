@@ -1,10 +1,11 @@
 ﻿<Properties StartupConfiguration="{8BBC60F1-CEB1-40FC-904C-B681495ADAB6}|Default">
-  <MonoDevelop.Ide.Workbench ActiveDocument="TinyJSON/Encoder.cs">
+  <MonoDevelop.Ide.Workbench ActiveDocument="Example/Program.cs">
     <Files>
-      <File FileName="Example/Program.cs" Line="93" Column="38" />
-      <File FileName="UnitTests/TestClassType.cs" Line="97" Column="47" />
+      <File FileName="Example/Program.cs" Line="27" Column="2" />
+      <File FileName="UnitTests/TestClassType.cs" Line="96" Column="94" />
       <File FileName="TinyJSON/JSON.cs" Line="135" Column="21" />
-      <File FileName="TinyJSON/Encoder.cs" Line="34" Column="24" />
+      <File FileName="TinyJSON/Encoder.cs" Line="186" Column="34" />
+      <File FileName="TinyJSON/EncodeOptions.cs" Line="12" Column="26" />
     </Files>
     <Pads>
       <Pad Id="MonoDevelop.UnitTesting.TestPad">
@@ -12,7 +13,7 @@
           <Node name="TinyJSON" expanded="True">
             <Node name="UnitTests" expanded="True">
               <Node name="TestClassType" expanded="True">
-                <Node name="TestDumpClassIncludePublicProperties" selected="True" />
+                <Node name="TestLoadClass" selected="True" />
               </Node>
               <Node name="UnitTests" expanded="True">
                 <Node name="TestSimpleTypes" expanded="True" />
