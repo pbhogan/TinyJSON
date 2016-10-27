@@ -16,10 +16,22 @@ public class TestClassType
 		public int x;
 		public int y;
 
-		[Exclude] 
+		[Exclude]
 		public int z;
 
 		public List<int> list;
+
+		public int p1 { get; set; }
+		public int p2 { get; private set; }
+		public int p3 { get; }
+
+
+		public TestClass()
+		{
+			p1 = 1;
+			p2 = 2;
+			p3 = 3;
+		}
 
 
 		[AfterDecode]
@@ -78,9 +90,18 @@ public class TestClassType
 
 
 	[Test]
-	public void TestLoadStruct()
+	public void TestDumpClassIncludePublicProperties()
 	{
-		TestClass testClass = JSON.Load( "{\"x\":5,\"y\":7,\"z\":3,\"list\":[3,1,4]}}" ).Make<TestClass>();
+		var testClass = new TestClass() { x = 5, y = 7, z = 0 };
+		Console.WriteLine( JSON.Dump( testClass, EncodeOptions.NoTypeHints | EncodeOptions.IncludePublicProperties ) );
+		Assert.AreEqual( "{\"x\":5,\"y\":7,\"list\":null,\"p1\":1,\"p2\":2,\"p3\":3}", JSON.Dump( testClass, EncodeOptions.NoTypeHints | EncodeOptions.IncludePublicProperties ) );
+	}
+
+
+	[Test]
+	public void TestLoadClass()
+	{
+		TestClass testClass = JSON.Load( "{\"x\":5,\"y\":7,\"z\":3,\"list\":[3,1,4],\"p1\":1,\"p2\":2,\"p3\":3}" ).Make<TestClass>();
 
 		Assert.AreEqual( 5, testClass.x );
 		Assert.AreEqual( 7, testClass.y );
@@ -90,6 +111,10 @@ public class TestClassType
 		Assert.AreEqual( 3, testClass.list[0] );
 		Assert.AreEqual( 1, testClass.list[1] );
 		Assert.AreEqual( 4, testClass.list[2] );
+
+		Assert.AreEqual( 1, testClass.p1 );
+		Assert.AreEqual( 2, testClass.p2 );
+		Assert.AreEqual( 3, testClass.p3 );
 
 		Assert.IsTrue( afterDecodeCallbackFired );
 	}
@@ -110,7 +135,7 @@ public class TestClassType
 	{
 		var outerClass = new OuterClass();
 		outerClass.inner = new InnerClass();
-		Assert.AreEqual( "{\"inner\":{\"@type\":\"" + typeof(InnerClass).FullName + "\"}}", JSON.Dump( outerClass, EncodeOptions.NoTypeHints ) );
+		Assert.AreEqual( "{\"inner\":{\"@type\":\"" + typeof( InnerClass ).FullName + "\"}}", JSON.Dump( outerClass, EncodeOptions.NoTypeHints ) );
 	}
 }
 

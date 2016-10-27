@@ -1,20 +1,21 @@
-﻿<Properties StartupItem="Example/Example.csproj">
-  <MonoDevelop.Ide.Workspace ActiveConfiguration="Debug" />
-  <MonoDevelop.Ide.Workbench ActiveDocument="TinyJSON/JSON.cs">
+﻿<Properties StartupConfiguration="{8BBC60F1-CEB1-40FC-904C-B681495ADAB6}|Default">
+  <MonoDevelop.Ide.Workbench ActiveDocument="TinyJSON/Encoder.cs">
     <Files>
-      <File FileName="Example/Program.cs" Line="1" Column="1" />
-      <File FileName="TinyJSON/Encoder.cs" Line="1" Column="1" />
-      <File FileName="UnitTests/TestSimpleTypes.cs" Line="1" Column="1" />
-      <File FileName="TinyJSON/JSON.cs" Line="12" Column="8" />
-      <File FileName="UnitTests/TestCollectionTypes.cs" Line="1" Column="1" />
+      <File FileName="Example/Program.cs" Line="93" Column="38" />
+      <File FileName="UnitTests/TestClassType.cs" Line="97" Column="47" />
+      <File FileName="TinyJSON/JSON.cs" Line="135" Column="21" />
+      <File FileName="TinyJSON/Encoder.cs" Line="34" Column="24" />
     </Files>
     <Pads>
-      <Pad Id="MonoDevelop.NUnit.TestPad">
+      <Pad Id="MonoDevelop.UnitTesting.TestPad">
         <State name="__root__">
           <Node name="TinyJSON" expanded="True">
             <Node name="UnitTests" expanded="True">
-              <Node name="TestCollectionTypes" expanded="True">
-                <Node name="TestLoadDictWithEnumKeys" selected="True" />
+              <Node name="TestClassType" expanded="True">
+                <Node name="TestDumpClassIncludePublicProperties" selected="True" />
+              </Node>
+              <Node name="UnitTests" expanded="True">
+                <Node name="TestSimpleTypes" expanded="True" />
               </Node>
             </Node>
           </Node>
@@ -22,8 +23,10 @@
       </Pad>
     </Pads>
   </MonoDevelop.Ide.Workbench>
+  <MonoDevelop.Ide.Workspace ActiveConfiguration="Debug" />
   <MonoDevelop.Ide.DebuggingService.Breakpoints>
     <BreakpointStore />
   </MonoDevelop.Ide.DebuggingService.Breakpoints>
   <MonoDevelop.Ide.DebuggingService.PinnedWatches />
+  <MonoDevelop.Ide.ItemProperties.Example PreferredExecutionTarget="MonoDevelop.Default" />
 </Properties>

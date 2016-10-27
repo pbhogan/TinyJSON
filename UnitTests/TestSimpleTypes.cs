@@ -41,7 +41,7 @@ namespace UnitTests
 		[Test]
 		public void TestLoadIntegerTypes()
 		{
-			Assert.AreEqual( -12345, JSON.Load( "-12345" ) );
+			Assert.AreEqual( -12345, (Int32) JSON.Load( "-12345" ) );
 		}
 
 
