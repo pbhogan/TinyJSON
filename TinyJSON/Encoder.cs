@@ -185,7 +185,12 @@ namespace TinyJSON
 
 					foreach (var attribute in property.GetCustomAttributes( true ))
 					{
-						if (shouldEncode || includeAttrType.IsAssignableFrom( attribute.GetType() ))
+						if (excludeAttrType.IsAssignableFrom( attribute.GetType() ))
+						{
+							shouldEncode = false;
+						}
+
+						if (includeAttrType.IsAssignableFrom( attribute.GetType() ))
 						{
 							shouldEncode = true;
 						}
