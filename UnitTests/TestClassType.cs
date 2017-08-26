@@ -137,5 +137,34 @@ public class TestClassType
 		outerClass.inner = new InnerClass();
 		Assert.AreEqual( "{\"inner\":{\"@type\":\"" + typeof( InnerClass ).FullName + "\"}}", JSON.Dump( outerClass, EncodeOptions.NoTypeHints ) );
 	}
+
+
+	class AliasData
+	{
+		[DecodeAlias("numberFieldAlias")]
+		public int numberField;
+
+		[Include]
+		[DecodeAlias("NumberPropertyAlias")]
+		public int NumberProperty { get; set; }
+
+		[DecodeAlias("anotherNumberFieldAliasOne", "anotherNumberFieldAliasTwo")]
+		public int anotherNumberField;
+
+		[DecodeAlias("AnotherNumberPropertyAliasOne")]
+		[DecodeAlias("AnotherNumberPropertyAliasTwo")]
+		public int AnotherNumberProperty;
+	}
+
+	[Test]
+	public void TestLoadAlias() {
+		var json = "{ \"numberFieldAlias\" : 1, \"NumberPropertyAlias\" : 2, \"anotherNumberFieldAliasOne\" : 3, \"anotherNumberFieldAliasTwo\" : 4, \"AnotherNumberPropertyAliasOne\" : 5, \"AnotherNumberPropertyAliasTwo\" : 6 }";
+		var aliasData = JSON.Load( json ).Make<AliasData>();
+
+		Assert.AreEqual( 1, aliasData.numberField );
+		Assert.AreEqual( 2, aliasData.NumberProperty );
+		Assert.IsTrue( aliasData.anotherNumberField == 3 || aliasData.anotherNumberField == 4 );
+		Assert.IsTrue( aliasData.AnotherNumberProperty == 5 || aliasData.AnotherNumberProperty == 6 );
+	}
 }
 

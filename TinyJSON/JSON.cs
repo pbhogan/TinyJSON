@@ -32,6 +32,25 @@ namespace TinyJSON
 
 
 	/// <summary>
+	/// Member aliases when an object is decoded.
+	/// Objects will decode to the first field or property found with a matching alias.
+	/// </summary>
+	[AttributeUsage( AttributeTargets.Field | AttributeTargets.Property, AllowMultiple = true )]
+	public class DecodeAlias : Attribute
+	{
+		public string[] Names { get { return names; } }
+		private string[] names;
+
+		public DecodeAlias(params string[] names) {
+			this.names = names;
+		}
+
+		public bool Contains(string name) {
+			return Array.IndexOf(names, name) > -1;
+		}
+	}
+
+	/// <summary>
 	/// Mark methods to be called after an object is decoded.
 	/// </summary>
 	[AttributeUsage( AttributeTargets.Method )]
@@ -92,6 +111,7 @@ namespace TinyJSON
 	{
 		static readonly Type includeAttrType = typeof(Include);
 		static readonly Type excludeAttrType = typeof(Exclude);
+		static readonly Type aliasAttrType = typeof(DecodeAlias);
 
 
 		public static Variant Load( string json )
@@ -278,6 +298,26 @@ namespace TinyJSON
 			foreach (var pair in data as ProxyObject)
 			{
 				var field = type.GetField( pair.Key, instanceBindingFlags );
+
+				if (field == null) {
+					// Check for field alias
+					var fields = type.GetFields( instanceBindingFlags );
+					foreach (var fieldInfo in fields)
+					{
+						foreach (var attribute in fieldInfo.GetCustomAttributes( true ) )
+						{
+							if (aliasAttrType.IsAssignableFrom( attribute.GetType() ))
+							{
+								if ( (attribute as DecodeAlias).Contains( pair.Key ) )
+								{
+									field = fieldInfo;
+									break;
+								}
+							}
+						}
+					}
+				}
+
 				if (field != null)
 				{
 					var shouldDecode = field.IsPublic;
@@ -313,6 +353,26 @@ namespace TinyJSON
 				}
 
 				var property = type.GetProperty( pair.Key, instanceBindingFlags );
+
+				if (property == null) {
+					// Check for property alias
+					var properties = type.GetProperties( instanceBindingFlags );
+					foreach (var propertyInfo in properties)
+					{
+						foreach (var attribute in propertyInfo.GetCustomAttributes( false ) )
+						{
+							if (aliasAttrType.IsAssignableFrom( attribute.GetType() ))
+							{
+								if ( (attribute as DecodeAlias).Contains( pair.Key) )
+								{
+									property = propertyInfo;
+									break;
+								}
+							}
+						}
+					}
+				}
+
 				if (property != null)
 				{
 					if (property.CanWrite && property.GetCustomAttributes( false ).AnyOfType( includeAttrType ))
