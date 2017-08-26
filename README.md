@@ -13,6 +13,7 @@ TinyJSON is a simple JSON library for C# that strives for ease of use.
 * Optional pretty printing JSON output.
 * Polymorphic classes supported with a type hint encoded into the JSON.
 * Optionally encode properties and private fields.
+* Supports decoding fields and properties from aliased names.
 * Unit tested.
 
 ## Usage
@@ -144,6 +145,20 @@ testClass = JSON.Load( json ).Make<Data>();
 Finally, you'll notice that `TestClass` has the methods `BeforeEncode()` and `AfterDecode()` which have the `TinyJSON.BeforeEncode` and `TinyJSON.AfterDecode` attributes. These methods will be called *before* the object starts being serialized and *after* the object has been fully deserialized. This is useful when some further preparation or initialization logic is required.
 
 By default, only public fields are encoded, not properties or private fields. You can tag any field or property to be included with the `TinyJSON.Include` attribute, or force a public field to be excluded with the `TinyJSON.Exclude` attribute.
+
+Fields and properties can be decoded from aliases using the `TinyJSON.DecodeAlias` attribute. While decoding, if no matching field is found then all fields tagged with `TinyJSON.DecodeAlias` are searched for a matching alias. Similarly, if no matching property is found then all properties tagged with `TinyJSON.DecodeAlias` are searched for a matching alias.
+
+```csharp
+class TestClass
+{
+	[DecodeAlias("anotherName")]
+	public string name; // decode from "name" or "anotherName"
+
+	[DecodeAlias("anotherNumber", "yetAnotherNumber")]
+	public int number; // decode from "number", "anotherNumber", or "yetAnotherNumber"
+}
+```
+
 
 ## Type Hinting
 
