@@ -2,6 +2,7 @@ using System;
 using System.Collections;
 using System.Reflection;
 using System.Text;
+using System.Globalization;
 
 
 namespace TinyJSON
@@ -378,7 +379,7 @@ namespace TinyJSON
 				value is ulong ||
 				value is decimal)
 			{
-				builder.Append( value.ToString() );
+				builder.Append( Convert.ToString(value, CultureInfo.InvariantCulture) );
 			}
 			else
 			{

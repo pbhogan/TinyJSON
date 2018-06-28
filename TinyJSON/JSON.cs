@@ -1,3 +1,5 @@
+#define ENABLE_IL2CPP
+
 using System;
 using System.Collections;
 using System.Collections.Generic;
