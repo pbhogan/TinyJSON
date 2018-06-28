@@ -2,6 +2,8 @@ using System;
 using TinyJSON;
 using NUnit.Framework;
 using System.Collections.Generic;
+using System.Globalization;
+using System.Reflection;
 
 
 namespace UnitTests
@@ -54,6 +56,17 @@ namespace UnitTests
 
 
 		[Test]
+		public void TestDumpFloatTypesForGermanCulture()
+		{
+			var currentCulture = CultureInfo.CurrentCulture;
+			CultureInfo.CurrentCulture = new CultureInfo( "de", false );
+			Assert.AreEqual( "123.45", JSON.Dump( (Single) 123.45 ) );
+			Assert.AreEqual( "123.45", JSON.Dump( (Double) 123.45 ) );
+			CultureInfo.CurrentCulture = currentCulture;
+		}
+
+
+		[Test]
 		public void TestDumpDecimalType()
 		{
 			Assert.AreEqual( "79228162514264337593543950335", JSON.Dump( Decimal.MaxValue ) );
@@ -72,7 +85,6 @@ namespace UnitTests
 		public void TestDumpString()
 		{
 			Assert.AreEqual( "\"OHAI! Can haz ball of strings?\"", JSON.Dump( "OHAI! Can haz ball of strings?" ) );
-
 			Assert.AreEqual( "\"\\\"\"", JSON.Dump( "\"" ) );
 			Assert.AreEqual( "\"\\\\\"", JSON.Dump( "\\" ) );
 			Assert.AreEqual( "\"\\b\"", JSON.Dump( "\b" ) );
@@ -80,7 +92,6 @@ namespace UnitTests
 			Assert.AreEqual( "\"\\n\"", JSON.Dump( "\n" ) );
 			Assert.AreEqual( "\"\\r\"", JSON.Dump( "\r" ) );
 			Assert.AreEqual( "\"\\t\"", JSON.Dump( "\t" ) );
-
 			Assert.AreEqual( "\"c\"", JSON.Dump( 'c' ) );
 		}
 
@@ -89,7 +100,6 @@ namespace UnitTests
 		public void TestLoadString()
 		{
 			Assert.AreEqual( "OHAI! Can haz ball of strings?", (String) JSON.Load( "\"OHAI! Can haz ball of strings?\"" ) );
-
 			Assert.AreEqual( "\"", (String) JSON.Load( "\"\\\"\"" ) );
 			Assert.AreEqual( "\\", (String) JSON.Load( "\"\\\\\"" ) );
 			Assert.AreEqual( "\b", (String) JSON.Load( "\"\\b\"" ) );
@@ -137,7 +147,6 @@ namespace UnitTests
 			ValueTypes item;
 			var json = "{\"i16\":1,\"u16\":2,\"i32\":3,\"u32\":4,\"i64\":5,\"u64\":6,\"s\":7,\"d\":8,\"m\":9,\"b\":true}";
 			var data = JSON.Load( json );
-
 			Assert.DoesNotThrow( () => data.Make<ValueTypes>() );
 			Assert.DoesNotThrow( () => JSON.MakeInto( data, out item ) );
 		}

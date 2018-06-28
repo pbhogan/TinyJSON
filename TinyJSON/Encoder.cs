@@ -1,5 +1,6 @@
 using System;
 using System.Collections;
+using System.Globalization;
 using System.Reflection;
 using System.Text;
 
@@ -8,9 +9,9 @@ namespace TinyJSON
 {
 	public sealed class Encoder
 	{
-		static readonly Type includeAttrType = typeof( Include );
-		static readonly Type excludeAttrType = typeof( Exclude );
-		static readonly Type typeHintAttrType = typeof( TypeHint );
+		static readonly Type includeAttrType = typeof(Include);
+		static readonly Type excludeAttrType = typeof(Exclude);
+		static readonly Type typeHintAttrType = typeof(TypeHint);
 
 		StringBuilder builder;
 		EncodeOptions options;
@@ -77,38 +78,31 @@ namespace TinyJSON
 			{
 				builder.Append( "null" );
 			}
-			else
-			if ((asString = value as string) != null)
+			else if ((asString = value as string) != null)
 			{
 				EncodeString( asString );
 			}
-			else
-			if (value is bool)
+			else if (value is bool)
 			{
 				builder.Append( value.ToString().ToLower() );
 			}
-			else
-			if (value is Enum)
+			else if (value is Enum)
 			{
 				EncodeString( value.ToString() );
 			}
-			else
-			if ((asArray = value as Array) != null)
+			else if ((asArray = value as Array) != null)
 			{
 				EncodeArray( asArray, forceTypeHint );
 			}
-			else
-			if ((asList = value as IList) != null)
+			else if ((asList = value as IList) != null)
 			{
 				EncodeList( asList, forceTypeHint );
 			}
-			else
-			if ((asDict = value as IDictionary) != null)
+			else if ((asDict = value as IDictionary) != null)
 			{
 				EncodeDictionary( asDict, forceTypeHint );
 			}
-			else
-			if (value is char)
+			else if (value is char)
 			{
 				EncodeString( value.ToString() );
 			}
@@ -136,6 +130,7 @@ namespace TinyJSON
 				{
 					AppendIndent();
 				}
+
 				EncodeString( ProxyObject.TypeHintName );
 				AppendColon();
 				EncodeString( type.FullName );
@@ -308,7 +303,6 @@ namespace TinyJSON
 		}
 
 
-
 		void EncodeString( string value )
 		{
 			builder.Append( '\"' );
@@ -356,6 +350,7 @@ namespace TinyJSON
 						{
 							builder.Append( "\\u" + Convert.ToString( codepoint, 16 ).PadLeft( 4, '0' ) );
 						}
+
 						break;
 				}
 			}
@@ -367,18 +362,18 @@ namespace TinyJSON
 		void EncodeOther( object value, bool forceTypeHint )
 		{
 			if (value is float ||
-				value is double ||
-				value is int ||
-				value is uint ||
-				value is long ||
-				value is sbyte ||
-				value is byte ||
-				value is short ||
-				value is ushort ||
-				value is ulong ||
-				value is decimal)
+			    value is double ||
+			    value is int ||
+			    value is uint ||
+			    value is long ||
+			    value is sbyte ||
+			    value is byte ||
+			    value is short ||
+			    value is ushort ||
+			    value is ulong ||
+			    value is decimal)
 			{
-				builder.Append( value.ToString() );
+				builder.Append( Convert.ToString( value, CultureInfo.InvariantCulture ) );
 			}
 			else
 			{
@@ -480,4 +475,3 @@ namespace TinyJSON
 		#endregion
 	}
 }
-
