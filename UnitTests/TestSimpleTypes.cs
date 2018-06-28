@@ -1,9 +1,15 @@
 using System;
-using TinyJSON;
-using NUnit.Framework;
 using System.Collections.Generic;
 using System.Globalization;
-using System.Reflection;
+using TinyJSON;
+using NUnit.Framework;
+
+
+// Disable field is never used warning.
+#pragma warning disable 169
+
+// ReSharper disable ClassNeverInstantiated.Local
+// ReSharper disable InconsistentNaming
 
 
 namespace UnitTests
@@ -142,10 +148,11 @@ namespace UnitTests
 
 
 		[Test]
+		// ReSharper disable once InconsistentNaming
 		public void TestAOTCompatibility()
 		{
 			ValueTypes item;
-			var json = "{\"i16\":1,\"u16\":2,\"i32\":3,\"u32\":4,\"i64\":5,\"u64\":6,\"s\":7,\"d\":8,\"m\":9,\"b\":true}";
+			const string json = "{\"i16\":1,\"u16\":2,\"i32\":3,\"u32\":4,\"i64\":5,\"u64\":6,\"s\":7,\"d\":8,\"m\":9,\"b\":true}";
 			var data = JSON.Load( json );
 			Assert.DoesNotThrow( () => data.Make<ValueTypes>() );
 			Assert.DoesNotThrow( () => JSON.MakeInto( data, out item ) );

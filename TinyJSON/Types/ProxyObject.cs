@@ -1,14 +1,14 @@
-using System;
 using System.Collections;
 using System.Collections.Generic;
+using System.Globalization;
 
 
 namespace TinyJSON
 {
 	public sealed class ProxyObject : Variant, IEnumerable<KeyValuePair<string, Variant>>
 	{
-		internal const string TypeHintName = "@type";
-		private Dictionary<string, Variant> dict;
+		public const string TypeHintKey = "@type";
+		readonly Dictionary<string, Variant> dict;
 
 
 		public ProxyObject()
@@ -46,10 +46,11 @@ namespace TinyJSON
 			get
 			{
 				Variant item;
-				if (TryGetValue( TypeHintName, out item ))
+				if (TryGetValue( TypeHintKey, out item ))
 				{
-					return item.ToString();
+					return item.ToString( CultureInfo.InvariantCulture );
 				}
+
 				return null;
 			}
 		}
@@ -57,15 +58,23 @@ namespace TinyJSON
 
 		public override Variant this[ string key ]
 		{
-			get { return dict[key]; }
-			set { dict[key] = value; }
+			get
+			{
+				return dict[key];
+			}
+			set
+			{
+				dict[key] = value;
+			}
 		}
 
 
 		public int Count
 		{
-			get { return dict.Count; }
+			get
+			{
+				return dict.Count;
+			}
 		}
 	}
 }
-

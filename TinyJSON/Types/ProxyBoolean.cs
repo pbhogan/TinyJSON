@@ -5,7 +5,7 @@ namespace TinyJSON
 {
 	public sealed class ProxyBoolean : Variant
 	{
-		private bool value;
+		readonly bool value;
 
 
 		public ProxyBoolean( bool value )
@@ -20,4 +20,3 @@ namespace TinyJSON
 		}
 	}
 }
-

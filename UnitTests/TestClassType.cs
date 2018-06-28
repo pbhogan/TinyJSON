@@ -1,14 +1,21 @@
 using System;
+using System.Collections.Generic;
 using TinyJSON;
 using NUnit.Framework;
-using System.Collections.Generic;
+
+
+// ReSharper disable NotAccessedField.Local
+// ReSharper disable UnusedMember.Local
+// ReSharper disable MemberCanBePrivate.Local
+// ReSharper disable AutoPropertyCanBeMadeGetOnly.Local
+// ReSharper disable InconsistentNaming
 
 
 [TestFixture]
 public class TestClassType
 {
-	public static bool afterDecodeCallbackFired = false;
-	public static bool beforeEncodeCallbackFired = false;
+	public static bool AfterDecodeCallbackFired;
+	public static bool BeforeEncodeCallbackFired;
 
 
 	class TestClass
@@ -22,6 +29,7 @@ public class TestClassType
 		public List<int> list;
 
 		public int p1 { get; set; }
+
 		public int p2 { get; private set; }
 		public int p3 { get; }
 
@@ -37,14 +45,14 @@ public class TestClassType
 		[AfterDecode]
 		public void AfterDecode()
 		{
-			TestClassType.afterDecodeCallbackFired = true;
+			AfterDecodeCallbackFired = true;
 		}
 
 
 		[BeforeEncode]
 		public void BeforeDecode()
 		{
-			TestClassType.beforeEncodeCallbackFired = true;
+			BeforeEncodeCallbackFired = true;
 		}
 	}
 
@@ -52,20 +60,20 @@ public class TestClassType
 	[Test]
 	public void TestDumpClass()
 	{
-		var testClass = new TestClass() { x = 5, y = 7, z = 0 };
-		testClass.list = new List<int>() { { 3 }, { 1 }, { 4 } };
+		var testClass = new TestClass { x = 5, y = 7, z = 0 };
+		testClass.list = new List<int> { 3, 1, 4 };
 
-		Assert.AreEqual( "{\"@type\":\"" + testClass.GetType().FullName + "\",\"x\":5,\"y\":7,\"list\":[3,1,4]}", JSON.Dump( testClass ) );
+		Assert.AreEqual( "{\"" + ProxyObject.TypeHintKey + "\":\"" + testClass.GetType().FullName + "\",\"x\":5,\"y\":7,\"list\":[3,1,4]}", JSON.Dump( testClass ) );
 
-		Assert.IsTrue( beforeEncodeCallbackFired );
+		Assert.IsTrue( BeforeEncodeCallbackFired );
 	}
 
 
 	[Test]
 	public void TestDumpClassNoTypeHint()
 	{
-		var testClass = new TestClass() { x = 5, y = 7, z = 0 };
-		testClass.list = new List<int>() { { 3 }, { 1 }, { 4 } };
+		var testClass = new TestClass { x = 5, y = 7, z = 0 };
+		testClass.list = new List<int> { 3, 1, 4 };
 
 		Assert.AreEqual( "{\"x\":5,\"y\":7,\"list\":[3,1,4]}", JSON.Dump( testClass, EncodeOptions.NoTypeHints ) );
 	}
@@ -74,8 +82,8 @@ public class TestClassType
 	[Test]
 	public void TestDumpClassPrettyPrint()
 	{
-		var testClass = new TestClass() { x = 5, y = 7, z = 0 };
-		testClass.list = new List<int>() { { 3 }, { 1 }, { 4 } };
+		var testClass = new TestClass { x = 5, y = 7, z = 0 };
+		testClass.list = new List<int> { 3, 1, 4 };
 
 		Assert.AreEqual( @"{
 	""x"": 5,
@@ -92,7 +100,7 @@ public class TestClassType
 	[Test]
 	public void TestDumpClassIncludePublicProperties()
 	{
-		var testClass = new TestClass() { x = 5, y = 7, z = 0 };
+		var testClass = new TestClass { x = 5, y = 7, z = 0 };
 		Console.WriteLine( JSON.Dump( testClass, EncodeOptions.NoTypeHints | EncodeOptions.IncludePublicProperties ) );
 		Assert.AreEqual( "{\"x\":5,\"y\":7,\"list\":null,\"p1\":1,\"p2\":2,\"p3\":3}", JSON.Dump( testClass, EncodeOptions.NoTypeHints | EncodeOptions.IncludePublicProperties ) );
 	}
@@ -101,7 +109,7 @@ public class TestClassType
 	[Test]
 	public void TestLoadClass()
 	{
-		TestClass testClass = JSON.Load( "{\"x\":5,\"y\":7,\"z\":3,\"list\":[3,1,4],\"p1\":1,\"p2\":2,\"p3\":3}" ).Make<TestClass>();
+		var testClass = JSON.Load( "{\"x\":5,\"y\":7,\"z\":3,\"list\":[3,1,4],\"p1\":1,\"p2\":2,\"p3\":3}" ).Make<TestClass>();
 
 		Assert.AreEqual( 5, testClass.x );
 		Assert.AreEqual( 7, testClass.y );
@@ -116,26 +124,37 @@ public class TestClassType
 		Assert.AreEqual( 2, testClass.p2 );
 		Assert.AreEqual( 3, testClass.p3 );
 
-		Assert.IsTrue( afterDecodeCallbackFired );
+		Assert.IsTrue( AfterDecodeCallbackFired );
 	}
 
 
-	class InnerClass
-	{
-	}
+	class InnerClass {}
 
 	class OuterClass
+	{
+		public InnerClass inner;
+	}
+
+	[Test]
+	public void TestDumpOuterClassWithNoTypeHintPropagatesToInnerClasses()
+	{
+		var outerClass = new OuterClass();
+		outerClass.inner = new InnerClass();
+		Assert.AreEqual( "{\"inner\":{}}", JSON.Dump( outerClass, EncodeOptions.NoTypeHints ) );
+	}
+
+
+	class OuterClassForceInnerTypeHint
 	{
 		[TypeHint]
 		public InnerClass inner;
 	}
 
 	[Test]
-	public void TestDumpOuterNoTypeHint()
+	public void TestDumpOuterClassWithForcedInnerTypeHint()
 	{
-		var outerClass = new OuterClass();
+		var outerClass = new OuterClassForceInnerTypeHint();
 		outerClass.inner = new InnerClass();
-		Assert.AreEqual( "{\"inner\":{\"@type\":\"" + typeof( InnerClass ).FullName + "\"}}", JSON.Dump( outerClass, EncodeOptions.NoTypeHints ) );
+		Assert.AreEqual( "{\"inner\":{\"" + ProxyObject.TypeHintKey + "\":\"" + typeof(InnerClass).FullName + "\"}}", JSON.Dump( outerClass, EncodeOptions.NoTypeHints ) );
 	}
 }
-

@@ -12,4 +12,3 @@ namespace TinyJSON
 		IncludePublicProperties = 4,
 	}
 }
-

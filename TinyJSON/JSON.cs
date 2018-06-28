@@ -3,7 +3,6 @@ using System.Collections;
 using System.Collections.Generic;
 using System.Globalization;
 using System.Reflection;
-using System.Linq;
 
 
 #if ENABLE_IL2CPP
@@ -74,10 +73,12 @@ namespace TinyJSON
 
 
 	[Obsolete( "Use the Exclude attribute instead." )]
+	// ReSharper disable once UnusedMember.Global
 	public sealed class Skip : Exclude {}
 
 
 	[Obsolete( "Use the AfterDecode attribute instead." )]
+	// ReSharper disable once UnusedMember.Global
 	public sealed class Load : AfterDecode {}
 
 
@@ -95,11 +96,12 @@ namespace TinyJSON
 #if ENABLE_IL2CPP
 	[Preserve]
 #endif
+	// ReSharper disable once InconsistentNaming
 	public static class JSON
 	{
 		static readonly Type includeAttrType = typeof(Include);
 		static readonly Type excludeAttrType = typeof(Exclude);
-		static readonly Type aliasAttrType = typeof(DecodeAlias);
+		static readonly Type decodeAliasAttrType = typeof(DecodeAlias);
 
 
 		public static Variant Load( string json )
@@ -150,9 +152,9 @@ namespace TinyJSON
 		}
 
 
-		private static Dictionary<string, Type> typeCache = new Dictionary<string, Type>();
+		static readonly Dictionary<string, Type> typeCache = new Dictionary<string, Type>();
 
-		private static Type FindType( string fullName )
+		static Type FindType( string fullName )
 		{
 			if (fullName == null)
 			{
@@ -182,7 +184,7 @@ namespace TinyJSON
 #if ENABLE_IL2CPP
 		[Preserve]
 #endif
-		private static T DecodeType<T>( Variant data )
+		static T DecodeType<T>( Variant data )
 		{
 			if (data == null)
 			{
@@ -205,35 +207,41 @@ namespace TinyJSON
 			{
 				if (type.GetArrayRank() == 1)
 				{
-					var makeFunc = decodeArrayMethod.MakeGenericMethod( new Type[] { type.GetElementType() } );
+					var makeFunc = decodeArrayMethod.MakeGenericMethod( type.GetElementType() );
 					return (T) makeFunc.Invoke( null, new object[] { data } );
 				}
-				else
-				{
-					var arrayData = data as ProxyArray;
-					var arrayRank = type.GetArrayRank();
-					var rankLengths = new int[arrayRank];
-					if (arrayData.CanBeMultiRankArray( rankLengths ))
-					{
-						var array = Array.CreateInstance( type.GetElementType(), rankLengths );
-						var makeFunc = decodeMultiRankArrayMethod.MakeGenericMethod( new Type[] { type.GetElementType() } );
-						try
-						{
-							makeFunc.Invoke( null, new object[] { arrayData, array, 1, rankLengths } );
-						}
-						catch (Exception e)
-						{
-							throw new DecodeException( "Error decoding multidimensional array. Did you try to decode into an array of incompatible rank or element type?", e );
-						}
 
-						return (T) Convert.ChangeType( array, typeof(T) );
+				var arrayData = data as ProxyArray;
+				if (arrayData == null)
+				{
+					throw new DecodeException( "Variant is expected to be a ProxyArray here, but it is not." );
+				}
+
+				var arrayRank = type.GetArrayRank();
+				var rankLengths = new int[arrayRank];
+				if (arrayData.CanBeMultiRankArray( rankLengths ))
+				{
+					var elementType = type.GetElementType();
+					if (elementType == null)
+					{
+						throw new DecodeException( "Array element type is expected to be not null, but it is." );
 					}
 
-					throw new DecodeException( "Error decoding multidimensional array; JSON data doesn't seem fit this structure." );
-#pragma warning disable 0162
-					return default(T);
-#pragma warning restore 0162
+					var array = Array.CreateInstance( elementType, rankLengths );
+					var makeFunc = decodeMultiRankArrayMethod.MakeGenericMethod( elementType );
+					try
+					{
+						makeFunc.Invoke( null, new object[] { arrayData, array, 1, rankLengths } );
+					}
+					catch (Exception e)
+					{
+						throw new DecodeException( "Error decoding multidimensional array. Did you try to decode into an array of incompatible rank or element type?", e );
+					}
+
+					return (T) Convert.ChangeType( array, typeof(T) );
 				}
+
+				throw new DecodeException( "Error decoding multidimensional array; JSON data doesn't seem fit this structure." );
 			}
 
 			if (typeof(IList).IsAssignableFrom( type ))
@@ -265,17 +273,15 @@ namespace TinyJSON
 				{
 					throw new TypeLoadException( "Could not load type '" + typeHint + "'." );
 				}
+
+				if (type.IsAssignableFrom( makeType ))
+				{
+					instance = (T) Activator.CreateInstance( makeType );
+					type = makeType;
+				}
 				else
 				{
-					if (type.IsAssignableFrom( makeType ))
-					{
-						instance = (T) Activator.CreateInstance( makeType );
-						type = makeType;
-					}
-					else
-					{
-						throw new InvalidCastException( "Cannot assign type '" + typeHint + "' to type '" + type.FullName + "'." );
-					}
+					throw new InvalidCastException( "Cannot assign type '" + typeHint + "' to type '" + type.FullName + "'." );
 				}
 			}
 			else
@@ -298,7 +304,7 @@ namespace TinyJSON
 					{
 						foreach (var attribute in fieldInfo.GetCustomAttributes( true ))
 						{
-							if (aliasAttrType.IsInstanceOfType( attribute ))
+							if (decodeAliasAttrType.IsInstanceOfType( attribute ))
 							{
 								if (((DecodeAlias) attribute).Contains( pair.Key ))
 								{
@@ -315,12 +321,12 @@ namespace TinyJSON
 					var shouldDecode = field.IsPublic;
 					foreach (var attribute in field.GetCustomAttributes( true ))
 					{
-						if (excludeAttrType.IsAssignableFrom( attribute.GetType() ))
+						if (excludeAttrType.IsInstanceOfType( attribute ))
 						{
 							shouldDecode = false;
 						}
 
-						if (includeAttrType.IsAssignableFrom( attribute.GetType() ))
+						if (includeAttrType.IsInstanceOfType( attribute ))
 						{
 							shouldDecode = true;
 						}
@@ -328,7 +334,7 @@ namespace TinyJSON
 
 					if (shouldDecode)
 					{
-						var makeFunc = decodeTypeMethod.MakeGenericMethod( new Type[] { field.FieldType } );
+						var makeFunc = decodeTypeMethod.MakeGenericMethod( field.FieldType );
 						if (type.IsValueType)
 						{
 							// Type is a struct.
@@ -354,7 +360,7 @@ namespace TinyJSON
 					{
 						foreach (var attribute in propertyInfo.GetCustomAttributes( false ))
 						{
-							if (aliasAttrType.IsInstanceOfType( attribute ))
+							if (decodeAliasAttrType.IsInstanceOfType( attribute ))
 							{
 								if (((DecodeAlias) attribute).Contains( pair.Key ))
 								{
@@ -392,14 +398,7 @@ namespace TinyJSON
 			{
 				if (method.GetCustomAttributes( false ).AnyOfType( typeof(AfterDecode) ))
 				{
-					if (method.GetParameters().Length == 0)
-					{
-						method.Invoke( instance, null );
-					}
-					else
-					{
-						method.Invoke( instance, new object[] { data } );
-					}
+					method.Invoke( instance, method.GetParameters().Length == 0 ? null : new object[] { data } );
 				}
 			}
 
@@ -410,11 +409,18 @@ namespace TinyJSON
 #if ENABLE_IL2CPP
 		[Preserve]
 #endif
-		private static List<T> DecodeList<T>( Variant data )
+		// ReSharper disable once UnusedMethodReturnValue.Local
+		static List<T> DecodeList<T>( Variant data )
 		{
 			var list = new List<T>();
 
-			foreach (var item in data as ProxyArray)
+			var proxyArray = data as ProxyArray;
+			if (proxyArray == null)
+			{
+				throw new DecodeException( "Variant is expected to be a ProxyArray here, but it is not." );
+			}
+
+			foreach (var item in proxyArray)
 			{
 				list.Add( DecodeType<T>( item ) );
 			}
@@ -426,15 +432,22 @@ namespace TinyJSON
 #if ENABLE_IL2CPP
 		[Preserve]
 #endif
-		private static Dictionary<K, V> DecodeDictionary<K, V>( Variant data )
+		// ReSharper disable once UnusedMethodReturnValue.Local
+		static Dictionary<TKey, TValue> DecodeDictionary<TKey, TValue>( Variant data )
 		{
-			var dict = new Dictionary<K, V>();
-			var type = typeof(K);
+			var dict = new Dictionary<TKey, TValue>();
+			var type = typeof(TKey);
 
-			foreach (var pair in data as ProxyObject)
+			var proxyObject = data as ProxyObject;
+			if (proxyObject == null)
 			{
-				var k = (K) (type.IsEnum ? Enum.Parse( type, pair.Key ) : Convert.ChangeType( pair.Key, type ));
-				var v = DecodeType<V>( pair.Value );
+				throw new DecodeException( "Variant is expected to be a ProxyObject here, but it is not." );
+			}
+
+			foreach (var pair in proxyObject)
+			{
+				var k = (TKey) (type.IsEnum ? Enum.Parse( type, pair.Key ) : Convert.ChangeType( pair.Key, type ));
+				var v = DecodeType<TValue>( pair.Value );
 				dict.Add( k, v );
 			}
 
@@ -445,14 +458,20 @@ namespace TinyJSON
 #if ENABLE_IL2CPP
 		[Preserve]
 #endif
-		private static T[] DecodeArray<T>( Variant data )
+		// ReSharper disable once UnusedMethodReturnValue.Local
+		static T[] DecodeArray<T>( Variant data )
 		{
 			var arrayData = data as ProxyArray;
+			if (arrayData == null)
+			{
+				throw new DecodeException( "Variant is expected to be a ProxyArray here, but it is not." );
+			}
+
 			var arraySize = arrayData.Count;
 			var array = new T[arraySize];
 
-			int i = 0;
-			foreach (var item in data as ProxyArray)
+			var i = 0;
+			foreach (var item in arrayData)
 			{
 				array[i++] = DecodeType<T>( item );
 			}
@@ -464,10 +483,11 @@ namespace TinyJSON
 #if ENABLE_IL2CPP
 		[Preserve]
 #endif
-		private static void DecodeMultiRankArray<T>( ProxyArray arrayData, Array array, int arrayRank, int[] indices )
+		// ReSharper disable once UnusedMember.Local
+		static void DecodeMultiRankArray<T>( ProxyArray arrayData, Array array, int arrayRank, int[] indices )
 		{
 			var count = arrayData.Count;
-			for (int i = 0; i < count; i++)
+			for (var i = 0; i < count; i++)
 			{
 				indices[arrayRank - 1] = i;
 				if (arrayRank < array.Rank)
@@ -482,18 +502,19 @@ namespace TinyJSON
 		}
 
 
-		private static BindingFlags instanceBindingFlags = BindingFlags.Public | BindingFlags.NonPublic | BindingFlags.Instance;
-		private static BindingFlags staticBindingFlags = BindingFlags.Public | BindingFlags.NonPublic | BindingFlags.Static;
-		private static MethodInfo decodeTypeMethod = typeof(JSON).GetMethod( "DecodeType", staticBindingFlags );
-		private static MethodInfo decodeListMethod = typeof(JSON).GetMethod( "DecodeList", staticBindingFlags );
-		private static MethodInfo decodeDictionaryMethod = typeof(JSON).GetMethod( "DecodeDictionary", staticBindingFlags );
-		private static MethodInfo decodeArrayMethod = typeof(JSON).GetMethod( "DecodeArray", staticBindingFlags );
-		private static MethodInfo decodeMultiRankArrayMethod = typeof(JSON).GetMethod( "DecodeMultiRankArray", staticBindingFlags );
+		const BindingFlags instanceBindingFlags = BindingFlags.Public | BindingFlags.NonPublic | BindingFlags.Instance;
+		const BindingFlags staticBindingFlags = BindingFlags.Public | BindingFlags.NonPublic | BindingFlags.Static;
+		static readonly MethodInfo decodeTypeMethod = typeof(JSON).GetMethod( "DecodeType", staticBindingFlags );
+		static readonly MethodInfo decodeListMethod = typeof(JSON).GetMethod( "DecodeList", staticBindingFlags );
+		static readonly MethodInfo decodeDictionaryMethod = typeof(JSON).GetMethod( "DecodeDictionary", staticBindingFlags );
+		static readonly MethodInfo decodeArrayMethod = typeof(JSON).GetMethod( "DecodeArray", staticBindingFlags );
+		static readonly MethodInfo decodeMultiRankArrayMethod = typeof(JSON).GetMethod( "DecodeMultiRankArray", staticBindingFlags );
 
 
 #if ENABLE_IL2CPP
 		[Preserve]
 #endif
+		// ReSharper disable once InconsistentNaming
 		public static void SupportTypeForAOT<T>()
 		{
 			DecodeType<T>( null );
@@ -516,7 +537,9 @@ namespace TinyJSON
 #if ENABLE_IL2CPP
 		[Preserve]
 #endif
-		private static void SupportValueTypesForAOT()
+		// ReSharper disable once InconsistentNaming
+		// ReSharper disable once UnusedMember.Local
+		static void SupportValueTypesForAOT()
 		{
 			SupportTypeForAOT<Int16>();
 			SupportTypeForAOT<UInt16>();

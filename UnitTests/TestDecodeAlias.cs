@@ -2,7 +2,9 @@
 using NUnit.Framework;
 
 
+// Disable field is never assigned warning.
 #pragma warning disable 649
+
 // ReSharper disable ClassNeverInstantiated.Local
 // ReSharper disable UnusedAutoPropertyAccessor.Local
 

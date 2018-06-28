@@ -1,7 +1,7 @@
 using System;
+using System.Collections.Generic;
 using TinyJSON;
 using NUnit.Framework;
-using System.Collections.Generic;
 
 
 [TestFixture]
@@ -10,7 +10,7 @@ public class TestCollectionTypes
 	[Test]
 	public void TestDumpRank1Array()
 	{
-		var array = new int[] { 3, 1, 4 };
+		var array = new[] { 3, 1, 4 };
 		Assert.AreEqual( "[3,1,4]", JSON.Dump( array ) );
 	}
 
@@ -18,7 +18,7 @@ public class TestCollectionTypes
 	[Test]
 	public void TestDumpRank2Array()
 	{
-		var array = new int[,] { { 1, 2, 3 }, { 4, 5, 6 } };
+		var array = new[,] { { 1, 2, 3 }, { 4, 5, 6 } };
 		Assert.AreEqual( "[[1,2,3],[4,5,6]]", JSON.Dump( array ) );
 	}
 
@@ -26,7 +26,7 @@ public class TestCollectionTypes
 	[Test]
 	public void TestDumpRank3Array()
 	{
-		var array = new int[,,] { { { 1, 2 }, { 3, 4 } }, { { 5, 6 }, { 7, 8 } }, { { 9, 0 }, { 1, 2 } } };
+		var array = new[,,] { { { 1, 2 }, { 3, 4 } }, { { 5, 6 }, { 7, 8 } }, { { 9, 0 }, { 1, 2 } } };
 		Assert.AreEqual( "[[[1,2],[3,4]],[[5,6],[7,8]],[[9,0],[1,2]]]", JSON.Dump( array ) );
 	}
 
@@ -34,7 +34,7 @@ public class TestCollectionTypes
 	[Test]
 	public void TestDumpJaggedArray()
 	{
-		var array = new int[][] { new int[] { 1, 2, 3 }, new int[] { 4, 5, 6 } };
+		var array = new[] { new[] { 1, 2, 3 }, new[] { 4, 5, 6 } };
 		Assert.AreEqual( "[[1,2,3],[4,5,6]]", JSON.Dump( array ) );
 	}
 
@@ -186,7 +186,7 @@ public class TestCollectionTypes
 		var variant = JSON.Load( "{\"foo\":1337,\"bar\":3.14}" );
 		var proxy = variant as ProxyObject;
 
-		Assert.AreNotEqual( null, proxy );
+		Assert.IsNotNull( proxy );
 		Assert.AreEqual( 2, proxy.Count );
 		Assert.AreEqual( 1337f, (float) proxy["foo"] );
 		Assert.AreEqual( 3.14f, (float) proxy["bar"] );
@@ -203,27 +203,32 @@ public class TestCollectionTypes
 	[Test]
 	public void TestDumpEnum()
 	{
-		var testEnum = TestEnum.Thing2;
+		const TestEnum testEnum = TestEnum.Thing2;
 		Assert.AreEqual( "\"Thing2\"", JSON.Dump( testEnum ) );
 	}
 
 
+	[Test]
 	public void TestLoadEnum()
 	{
-		TestEnum testEnum;
-
-		testEnum = JSON.Load( "\"Thing2\"" ).Make<TestEnum>();
+		var testEnum = JSON.Load( "\"Thing2\"" ).Make<TestEnum>();
 		Assert.AreEqual( TestEnum.Thing2, testEnum );
 
-		testEnum = JSON.Load( "\"Thing4\"" ).Make<TestEnum>();
-		Assert.AreEqual( null, testEnum );
+		try
+		{
+			JSON.Load( "\"Thing4\"" ).Make<TestEnum>();
+		}
+		catch (ArgumentException e)
+		{
+			Assert.AreEqual( e.Message, "Requested value 'Thing4' was not found." );
+		}
 	}
 
 
 	[Test]
 	public void TestDumpDictWithEnumKeys()
 	{
-		var dict = new Dictionary<TestEnum,String>();
+		var dict = new Dictionary<TestEnum, String>();
 		dict[TestEnum.Thing1] = "Item 1";
 		dict[TestEnum.Thing2] = "Item 2";
 		dict[TestEnum.Thing3] = "Item 3";
@@ -234,14 +239,12 @@ public class TestCollectionTypes
 	[Test]
 	public void TestLoadDictWithEnumKeys()
 	{
-		var json = "{\"Thing1\":\"Item 1\",\"Thing2\":\"Item 2\",\"Thing3\":\"Item 3\"}";
-		var dict = JSON.Load( json ).Make<Dictionary<TestEnum,String>>();
+		const string json = "{\"Thing1\":\"Item 1\",\"Thing2\":\"Item 2\",\"Thing3\":\"Item 3\"}";
+		var dict = JSON.Load( json ).Make<Dictionary<TestEnum, String>>();
 		Assert.AreNotEqual( null, dict );
 		Assert.AreEqual( 3, dict.Count );
 		Assert.AreEqual( "Item 1", dict[TestEnum.Thing1] );
 		Assert.AreEqual( "Item 2", dict[TestEnum.Thing2] );
 		Assert.AreEqual( "Item 3", dict[TestEnum.Thing3] );
 	}
-
 }
-

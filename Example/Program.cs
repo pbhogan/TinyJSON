@@ -1,7 +1,16 @@
 using System;
 using System.Collections.Generic;
-using System.Globalization;
 using TinyJSON;
+
+
+// Disable non-accessed field warning.
+#pragma warning disable 414
+
+// Disable field is never used warning.
+#pragma warning disable 169
+
+// ReSharper disable InconsistentNaming
+// ReSharper disable UnusedMember.Global
 
 
 namespace TestProgram
@@ -21,9 +30,7 @@ namespace TestProgram
 	}
 
 
-	class BaseClass
-	{
-	}
+	class BaseClass {}
 
 
 	class TestClass : BaseClass
@@ -34,16 +41,28 @@ namespace TestProgram
 		[TypeHint]
 		public List<TestStruct> data = new List<TestStruct>();
 
-		#pragma warning disable 0414
-		private int priv1;
-		[Include] private int priv2;
-		#pragma warning restore 0414
+		int priv1;
 
+		[Include]
+		int priv2;
+
+		// ReSharper disable once UnusedAutoPropertyAccessor.Local
 		int prop1 { get; set; }
-		[Include] int prop2 { set { } }
-		[Include] int prop3 { get; set; }
 
-		[Exclude] public int _ignored;
+		[Include]
+		// ReSharper disable once MemberCanBeMadeStatic.Local
+		int prop2
+		{
+			// ReSharper disable once ValueParameterNotUsed
+			set {}
+		}
+
+		[Include]
+		// ReSharper disable once UnusedAutoPropertyAccessor.Local
+		int prop3 { get; set; }
+
+		[Exclude]
+		public int _ignored;
 
 		public void Init()
 		{
@@ -82,79 +101,95 @@ namespace TestProgram
 	}
 
 
-	class Program
+	static class Program
 	{
-		public static void Main( string[] args )
+		static void TestEnumStringDictionary()
 		{
-			var dict = new Dictionary<TestEnum,String>();
-//			dict[TestEnum.Thing1] = "Thing1";
-//			dict[TestEnum.Thing2] = "Thing2";
-//			dict[TestEnum.Thing3] = "Thing3";
-//			var json = JSON.Dump( dict, EncodeOptions.PrettyPrint );
-			var json = "{\"Thing1\":\"Thing1\",\"Thing2\":\"Thing2\",\"Thing3\":\"Thing3\"}";
-			Console.WriteLine( json );
-			dict = JSON.Load( json ).Make<Dictionary<TestEnum,String>>();
+			var dict = new Dictionary<TestEnum, String>();
+			dict[TestEnum.Thing1] = "Thing1";
+			dict[TestEnum.Thing2] = "Thing2";
+			dict[TestEnum.Thing3] = "Thing3";
 			Console.WriteLine( JSON.Dump( dict ) );
 
-			/*
+			const string json = "{\"Thing1\":\"Thing1\",\"Thing2\":\"Thing2\",\"Thing3\":\"Thing3\"}";
+			Console.WriteLine( json );
+
+			dict = JSON.Load( json ).Make<Dictionary<TestEnum, String>>();
+			Console.WriteLine( JSON.Dump( dict ) );
+		}
+
+
+		static void TestClasses()
+		{
 			var testClass = new TestClass();
 			testClass.Init();
-			testClass.data.Add( new TestStruct() { x = 1, y = 2 } );
-			var testClassJson = JSON.Dump( (BaseClass) testClass, EncodeOptions.PrettyPrint | EncodeOptions.NoTypeHints );
-			Console.WriteLine( testClassJson );
-			/**/
+			testClass.data.Add( new TestStruct { x = 1, y = 2 } );
+			testClass.data.Add( new TestStruct { x = 3, y = 4 } );
+			testClass.data.Add( new TestStruct { x = 5, y = 6 } );
 
-			/*
+			Console.WriteLine( JSON.Dump( testClass, EncodeOptions.PrettyPrint ) );
+
+			var baseClass = (BaseClass) testClass;
+			var baseClassJson = JSON.Dump( baseClass, EncodeOptions.PrettyPrint );
+			Console.WriteLine( baseClassJson );
+
+			testClass = JSON.Load( baseClassJson ).Make<BaseClass>() as TestClass;
+			Console.WriteLine( JSON.Dump( testClass, EncodeOptions.PrettyPrint ) );
+		}
+
+
+		static void TestArrays()
+		{
+			const string json = "[[[1,2],[3,4]],[[5,6],[7,8]],[[9,0],[1,2]]]";
+			Console.WriteLine( json );
+
 			int[,,] array;
-			var variant = JSON.Load( "[[[1,2],[3,4]],[[5,6],[7,8]],[[9,0],[1,2]]]" );
-			JSON.MakeInto( variant, out array );
+			JSON.MakeInto( JSON.Load( json ), out array );
 			Console.WriteLine( JSON.Dump( array ) );
-			/**/
 
-			/*
-			var array0 = new int[] { 1, 2, 3 };
+			var array0 = new[] { 1, 2, 3 };
 			Console.WriteLine( JSON.Dump( array0 ) );
 
-			var array1 = new int[,] { { 1, 2, 3 }, { 4, 5, 6 } };
+			var array1 = new[,] { { 1, 2, 3 }, { 4, 5, 6 } };
 			Console.WriteLine( JSON.Dump( array1 ) );
 
-			var array2 = new int[,,] { { { 1, 2 }, { 3, 4 } }, { { 5, 6 }, { 7, 8 } }, { { 9, 0 }, { 1, 2 } } };
+			var array2 = new[,,] { { { 1, 2 }, { 3, 4 } }, { { 5, 6 }, { 7, 8 } }, { { 9, 0 }, { 1, 2 } } };
 			Console.WriteLine( JSON.Dump( array2 ) );
 
-			var array3 = new int[][] { new int[] { 1, 2, 3 }, new int[] { 4, 5, 6 } };
+			var array3 = new[] { new[] { 1, 2, 3 }, new[] { 4, 5, 6 } };
 			Console.WriteLine( JSON.Dump( array3 ) );
-			/**/
+		}
 
-			/*
-			var testClass = new TestClass();
-			testClass.Init();
-			testClass.data.Add( new TestStruct() { x = 1, y = 2 } );
-			testClass.data.Add( new TestStruct() { x = 3, y = 4 } );
-			testClass.data.Add( new TestStruct() { x = 5, y = 6 } );
 
-			var testClassJson = JSON.Dump( (BaseClass) testClass, EncodeOptions.PrettyPrint );
-			Console.WriteLine( testClassJson );
-
-			testClass = JSON.Load( testClassJson ).Make<BaseClass>() as TestClass;
-			Console.WriteLine( JSON.Dump( testClass, EncodeOptions.PrettyPrint ) );
-			/**/
-
-			/*
+		static void TestIteratingProxyArray()
+		{
 			var list = JSON.Load( "[1,2,3]" );
-			foreach (var item in list as ProxyArray)
+			foreach (var item in (ProxyArray) list)
 			{
 				int number = item;
 				Console.WriteLine( number );
 			}
+		}
 
+
+		static void TestIteratingProxyObject()
+		{
 			var dict = JSON.Load( "{\"x\":1,\"y\":2}" );
-			foreach (var pair in dict as ProxyObject)
+			foreach (var pair in (ProxyObject) dict)
 			{
 				float value = pair.Value;
 				Console.WriteLine( pair.Key + " = " + value );
 			}
-			/**/
+		}
+
+
+		public static void Main()
+		{
+			// TestClasses();
+			// TestArrays();
+			TestEnumStringDictionary();
+			// TestIteratingProxyArray();
+			// TestIteratingProxyObject();
 		}
 	}
 }
-

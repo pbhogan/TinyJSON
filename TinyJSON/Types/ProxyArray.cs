@@ -1,4 +1,3 @@
-using System;
 using System.Collections;
 using System.Collections.Generic;
 
@@ -7,7 +6,7 @@ namespace TinyJSON
 {
 	public sealed class ProxyArray : Variant, IEnumerable<Variant>
 	{
-		private List<Variant> list;
+		readonly List<Variant> list;
 
 
 		public ProxyArray()
@@ -36,14 +35,23 @@ namespace TinyJSON
 
 		public override Variant this[ int index ]
 		{
-			get { return list[index]; }
-			set { list[index] = value; }
+			get
+			{
+				return list[index];
+			}
+			set
+			{
+				list[index] = value;
+			}
 		}
 
 
 		public int Count
 		{
-			get { return list.Count; }
+			get
+			{
+				return list.Count;
+			}
 		}
 
 
@@ -53,7 +61,7 @@ namespace TinyJSON
 		}
 
 
-		private bool CanBeMultiRankArray( int rank, int[] rankLengths )
+		bool CanBeMultiRankArray( int rank, int[] rankLengths )
 		{
 			var count = list.Count;
 			rankLengths[rank] = count;
@@ -68,9 +76,10 @@ namespace TinyJSON
 			{
 				return false;
 			}
+
 			var firstItemCount = firstItem.Count;
 
-			for (int i = 1; i < count; i++)
+			for (var i = 1; i < count; i++)
 			{
 				var item = list[i] as ProxyArray;
 
@@ -94,4 +103,3 @@ namespace TinyJSON
 		}
 	}
 }
-

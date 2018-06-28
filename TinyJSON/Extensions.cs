@@ -20,7 +20,7 @@ namespace TinyJSON
 
 			foreach (var item in source)
 			{
-				if (expectedType.IsAssignableFrom( item.GetType() ))
+				if (expectedType.IsInstanceOfType( item ))
 				{
 					return true;
 				}
@@ -30,4 +30,3 @@ namespace TinyJSON
 		}
 	}
 }
-

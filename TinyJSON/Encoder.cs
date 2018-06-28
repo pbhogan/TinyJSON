@@ -13,8 +13,8 @@ namespace TinyJSON
 		static readonly Type excludeAttrType = typeof(Exclude);
 		static readonly Type typeHintAttrType = typeof(TypeHint);
 
-		StringBuilder builder;
-		EncodeOptions options;
+		readonly StringBuilder builder;
+		readonly EncodeOptions options;
 		int indent;
 
 
@@ -26,6 +26,7 @@ namespace TinyJSON
 		}
 
 
+		// ReSharper disable once UnusedMember.Global
 		public static string Encode( object obj )
 		{
 			return Encode( obj, EncodeOptions.None );
@@ -44,7 +45,7 @@ namespace TinyJSON
 		{
 			get
 			{
-				return ((options & EncodeOptions.PrettyPrint) == EncodeOptions.PrettyPrint);
+				return (options & EncodeOptions.PrettyPrint) == EncodeOptions.PrettyPrint;
 			}
 		}
 
@@ -53,7 +54,7 @@ namespace TinyJSON
 		{
 			get
 			{
-				return ((options & EncodeOptions.NoTypeHints) != EncodeOptions.NoTypeHints);
+				return (options & EncodeOptions.NoTypeHints) != EncodeOptions.NoTypeHints;
 			}
 		}
 
@@ -62,7 +63,7 @@ namespace TinyJSON
 		{
 			get
 			{
-				return ((options & EncodeOptions.IncludePublicProperties) == EncodeOptions.IncludePublicProperties);
+				return (options & EncodeOptions.IncludePublicProperties) == EncodeOptions.IncludePublicProperties;
 			}
 		}
 
@@ -131,9 +132,11 @@ namespace TinyJSON
 					AppendIndent();
 				}
 
-				EncodeString( ProxyObject.TypeHintName );
+				EncodeString( ProxyObject.TypeHintKey );
 				AppendColon();
 				EncodeString( type.FullName );
+
+				// ReSharper disable once RedundantAssignment
 				firstItem = false;
 			}
 
@@ -144,17 +147,17 @@ namespace TinyJSON
 				var shouldEncode = field.IsPublic;
 				foreach (var attribute in field.GetCustomAttributes( true ))
 				{
-					if (excludeAttrType.IsAssignableFrom( attribute.GetType() ))
+					if (excludeAttrType.IsInstanceOfType( attribute ))
 					{
 						shouldEncode = false;
 					}
 
-					if (includeAttrType.IsAssignableFrom( attribute.GetType() ))
+					if (includeAttrType.IsInstanceOfType( attribute ))
 					{
 						shouldEncode = true;
 					}
 
-					if (typeHintAttrType.IsAssignableFrom( attribute.GetType() ))
+					if (typeHintAttrType.IsInstanceOfType( attribute ))
 					{
 						shouldTypeHint = true;
 					}
@@ -180,17 +183,17 @@ namespace TinyJSON
 
 					foreach (var attribute in property.GetCustomAttributes( true ))
 					{
-						if (excludeAttrType.IsAssignableFrom( attribute.GetType() ))
+						if (excludeAttrType.IsInstanceOfType( attribute ))
 						{
 							shouldEncode = false;
 						}
 
-						if (includeAttrType.IsAssignableFrom( attribute.GetType() ))
+						if (includeAttrType.IsInstanceOfType( attribute ))
 						{
 							shouldEncode = true;
 						}
 
-						if (typeHintAttrType.IsAssignableFrom( attribute.GetType() ))
+						if (typeHintAttrType.IsInstanceOfType( attribute ))
 						{
 							shouldTypeHint = true;
 						}
@@ -222,7 +225,7 @@ namespace TinyJSON
 				AppendOpenBrace();
 
 				var firstItem = true;
-				foreach (object e in value.Keys)
+				foreach (var e in value.Keys)
 				{
 					AppendComma( firstItem );
 					EncodeString( e.ToString() );
@@ -236,6 +239,7 @@ namespace TinyJSON
 		}
 
 
+		// ReSharper disable once SuggestBaseTypeForParameter
 		void EncodeList( IList value, bool forceTypeHint )
 		{
 			if (value.Count == 0)
@@ -247,7 +251,7 @@ namespace TinyJSON
 				AppendOpenBracket();
 
 				var firstItem = true;
-				foreach (object obj in value)
+				foreach (var obj in value)
 				{
 					AppendComma( firstItem );
 					EncodeValue( obj, forceTypeHint );
@@ -282,7 +286,7 @@ namespace TinyJSON
 
 			if (rank == value.Rank - 1)
 			{
-				for (int i = min; i <= max; i++)
+				for (var i = min; i <= max; i++)
 				{
 					indices[rank] = i;
 					AppendComma( i == min );
@@ -291,7 +295,7 @@ namespace TinyJSON
 			}
 			else
 			{
-				for (int i = min; i <= max; i++)
+				for (var i = min; i <= max; i++)
 				{
 					indices[rank] = i;
 					AppendComma( i == min );
@@ -307,7 +311,7 @@ namespace TinyJSON
 		{
 			builder.Append( '\"' );
 
-			char[] charArray = value.ToCharArray();
+			var charArray = value.ToCharArray();
 			foreach (var c in charArray)
 			{
 				switch (c)
@@ -341,7 +345,7 @@ namespace TinyJSON
 						break;
 
 					default:
-						int codepoint = Convert.ToInt32( c );
+						var codepoint = Convert.ToInt32( c );
 						if ((codepoint >= 32) && (codepoint <= 126))
 						{
 							builder.Append( c );
@@ -386,7 +390,7 @@ namespace TinyJSON
 
 		void AppendIndent()
 		{
-			for (int i = 0; i < indent; i++)
+			for (var i = 0; i < indent; i++)
 			{
 				builder.Append( '\t' );
 			}

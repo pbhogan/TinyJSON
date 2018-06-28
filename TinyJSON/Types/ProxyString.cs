@@ -5,7 +5,7 @@ namespace TinyJSON
 {
 	public sealed class ProxyString : Variant
 	{
-		private string value;
+		readonly string value;
 
 
 		public ProxyString( string value )
@@ -20,4 +20,3 @@ namespace TinyJSON
 		}
 	}
 }
-

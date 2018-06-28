@@ -6,24 +6,18 @@ namespace TinyJSON
 {
 	public sealed class ProxyNumber : Variant
 	{
-		private static readonly char[] floatingPointCharacters = new char[] { '.', 'e' };
-		private IConvertible value;
+		static readonly char[] floatingPointCharacters = { '.', 'e' };
+		readonly IConvertible value;
 
 
 		public ProxyNumber( IConvertible value )
 		{
-			if (value is string)
-			{
-				this.value = Parse( value as string );
-			}
-			else
-			{
-				this.value = value;
-			}
+			var stringValue = value as string;
+			this.value = stringValue != null ? Parse( stringValue ) : value;
 		}
 
 
-		private IConvertible Parse( string value )
+		static IConvertible Parse( string value )
 		{
 			if (value.IndexOfAny( floatingPointCharacters ) == -1)
 			{
@@ -54,21 +48,20 @@ namespace TinyJSON
 					Double parsedValue;
 					if (Double.TryParse( value, NumberStyles.Float, NumberFormatInfo.InvariantInfo, out parsedValue ))
 					{
-						if (parsedValue != 0.0)
+						if (Math.Abs( parsedValue ) > Double.Epsilon)
 						{
 							return parsedValue;
 						}
 					}
 				}
+
 				return decimalValue;
 			}
-			else
+
+			Double doubleValue;
+			if (Double.TryParse( value, NumberStyles.Float, NumberFormatInfo.InvariantInfo, out doubleValue ))
 			{
-				Double parsedValue;
-				if (Double.TryParse( value, NumberStyles.Float, NumberFormatInfo.InvariantInfo, out parsedValue ))
-				{
-					return parsedValue;
-				}
+				return doubleValue;
 			}
 
 			return 0;
@@ -159,4 +152,3 @@ namespace TinyJSON
 		}
 	}
 }
-

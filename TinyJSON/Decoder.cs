@@ -1,4 +1,3 @@
-using System.Collections.Generic;
 using System.IO;
 using System.Text;
 using System;
@@ -8,8 +7,8 @@ namespace TinyJSON
 {
 	public sealed class Decoder : IDisposable
 	{
-		const string WhiteSpace = " \t\n\r";
-		const string WordBreak = " \t\n\r{}[],:\"";
+		const string whiteSpace = " \t\n\r";
+		const string wordBreak = " \t\n\r{}[],:\"";
 
 		enum Token
 		{
@@ -62,6 +61,7 @@ namespace TinyJSON
 			// {
 			while (true)
 			{
+				// ReSharper disable once SwitchStatementMissingSomeCases
 				switch (NextToken)
 				{
 					case Token.None:
@@ -86,6 +86,7 @@ namespace TinyJSON
 						{
 							return null;
 						}
+
 						json.Read();
 
 						// Value
@@ -98,7 +99,7 @@ namespace TinyJSON
 
 		ProxyArray DecodeArray()
 		{
-			ProxyArray proxy = new ProxyArray();
+			var proxy = new ProxyArray();
 
 			// Ditch opening bracket.
 			json.Read();
@@ -107,8 +108,9 @@ namespace TinyJSON
 			var parsing = true;
 			while (parsing)
 			{
-				Token nextToken = NextToken;
+				var nextToken = NextToken;
 
+				// ReSharper disable once SwitchStatementMissingSomeCases
 				switch (nextToken)
 				{
 					case Token.None:
@@ -140,6 +142,7 @@ namespace TinyJSON
 
 		Variant DecodeByToken( Token token )
 		{
+			// ReSharper disable once SwitchStatementMissingSomeCases
 			switch (token)
 			{
 				case Token.String:
@@ -172,21 +175,21 @@ namespace TinyJSON
 		Variant DecodeString()
 		{
 			var stringBuilder = new StringBuilder();
-			char c;
 
 			// ditch opening quote
 			json.Read();
 
-			bool parsing = true;
+			var parsing = true;
 			while (parsing)
 			{
 				if (json.Peek() == -1)
 				{
+					// ReSharper disable once RedundantAssignment
 					parsing = false;
 					break;
 				}
 
-				c = NextChar;
+				var c = NextChar;
 				switch (c)
 				{
 					case '"':
@@ -201,6 +204,8 @@ namespace TinyJSON
 						}
 
 						c = NextChar;
+
+						// ReSharper disable once SwitchStatementMissingSomeCases
 						switch (c)
 						{
 							case '"':
@@ -232,7 +237,7 @@ namespace TinyJSON
 							case 'u':
 								var hex = new StringBuilder();
 
-								for (int i = 0; i < 4; i++)
+								for (var i = 0; i < 4; i++)
 								{
 									hex.Append( NextChar );
 								}
@@ -240,9 +245,10 @@ namespace TinyJSON
 								stringBuilder.Append( (char) Convert.ToInt32( hex.ToString(), 16 ) );
 								break;
 
-								//default:
-								//	throw new DecodeException( @"Illegal character following escape character: " + c );
+							//default:
+							//	throw new DecodeException( @"Illegal character following escape character: " + c );
 						}
+
 						break;
 
 					default:
@@ -263,7 +269,7 @@ namespace TinyJSON
 
 		void ConsumeWhiteSpace()
 		{
-			while (WhiteSpace.IndexOf( PeekChar ) != -1)
+			while (whiteSpace.IndexOf( PeekChar ) != -1)
 			{
 				json.Read();
 
@@ -284,6 +290,7 @@ namespace TinyJSON
 			}
 		}
 
+
 		char NextChar
 		{
 			get
@@ -292,13 +299,14 @@ namespace TinyJSON
 			}
 		}
 
+
 		string NextWord
 		{
 			get
 			{
-				StringBuilder word = new StringBuilder();
+				var word = new StringBuilder();
 
-				while (WordBreak.IndexOf( PeekChar ) == -1)
+				while (wordBreak.IndexOf( PeekChar ) == -1)
 				{
 					word.Append( NextChar );
 
@@ -312,6 +320,7 @@ namespace TinyJSON
 			}
 		}
 
+
 		Token NextToken
 		{
 			get
@@ -323,6 +332,7 @@ namespace TinyJSON
 					return Token.None;
 				}
 
+				// ReSharper disable once SwitchStatementMissingSomeCases
 				switch (PeekChar)
 				{
 					case '{':
@@ -363,6 +373,7 @@ namespace TinyJSON
 						return Token.Number;
 				}
 
+				// ReSharper disable once SwitchStatementMissingSomeCases
 				switch (NextWord)
 				{
 					case "false":
@@ -380,4 +391,3 @@ namespace TinyJSON
 		}
 	}
 }
-
