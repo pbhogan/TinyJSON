@@ -36,6 +36,7 @@
     </Reference>
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="TestDecodeAlias.cs" />
     <Compile Include="TestSimpleTypes.cs" />
     <Compile Include="TestClassType.cs" />
     <Compile Include="TestCollectionTypes.cs" />

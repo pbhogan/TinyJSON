@@ -1,8 +1,10 @@
 using System;
 using System.Collections;
 using System.Collections.Generic;
+using System.Globalization;
 using System.Reflection;
 using System.Linq;
+
 
 #if ENABLE_IL2CPP
 using UnityEngine.Scripting;
@@ -12,13 +14,11 @@ using UnityEngine.Scripting;
 namespace TinyJSON
 {
 	/// <summary>
-	/// Mark members that should be included. 
+	/// Mark members that should be included.
 	/// Public fields are included by default.
 	/// </summary>
 	[AttributeUsage( AttributeTargets.Field | AttributeTargets.Property )]
-	public sealed class Include : Attribute
-	{
-	}
+	public sealed class Include : Attribute {}
 
 
 	/// <summary>
@@ -26,72 +26,80 @@ namespace TinyJSON
 	/// Private fields and all properties are excluded by default.
 	/// </summary>
 	[AttributeUsage( AttributeTargets.Field | AttributeTargets.Property )]
-	public class Exclude : Attribute
-	{
-	}
+	public class Exclude : Attribute {}
 
 
 	/// <summary>
 	/// Mark methods to be called after an object is decoded.
 	/// </summary>
 	[AttributeUsage( AttributeTargets.Method )]
-	public class AfterDecode : Attribute
-	{
-	}
+	public class AfterDecode : Attribute {}
 
 
 	/// <summary>
 	/// Mark methods to be called before an object is encoded.
 	/// </summary>
 	[AttributeUsage( AttributeTargets.Method )]
-	public class BeforeEncode : Attribute
-	{
-	}
+	public class BeforeEncode : Attribute {}
 
 
 	/// <summary>
 	/// Mark members to force type hinting even when EncodeOptions.NoTypeHints is set.
 	/// </summary>
 	[AttributeUsage( AttributeTargets.Field | AttributeTargets.Property )]
-	public class TypeHint : Attribute
+	public class TypeHint : Attribute {}
+
+
+	/// <summary>
+	/// Provide field and property aliases when an object is decoded.
+	/// If a field or property is not found while decoding, this list will be searched for a matching alias.
+	/// </summary>
+	[AttributeUsage( AttributeTargets.Field | AttributeTargets.Property, AllowMultiple = true )]
+	public class DecodeAlias : Attribute
 	{
+		public string[] Names { get; private set; }
+
+
+		public DecodeAlias( params string[] names )
+		{
+			Names = names;
+		}
+
+
+		public bool Contains( string name )
+		{
+			return Array.IndexOf( Names, name ) > -1;
+		}
 	}
 
 
 	[Obsolete( "Use the Exclude attribute instead." )]
-	public sealed class Skip : Exclude
-	{
-	}
+	public sealed class Skip : Exclude {}
 
 
 	[Obsolete( "Use the AfterDecode attribute instead." )]
-	public sealed class Load : AfterDecode
-	{
-	}
+	public sealed class Load : AfterDecode {}
 
 
 	public sealed class DecodeException : Exception
 	{
 		public DecodeException( string message )
-			: base( message )
-		{
-		}
+			: base( message ) {}
 
 
 		public DecodeException( string message, Exception innerException )
-			: base( message, innerException )
-		{
-		}
+			: base( message, innerException ) {}
 	}
 
 
-	#if ENABLE_IL2CPP
+#if ENABLE_IL2CPP
 	[Preserve]
-	#endif
+#endif
 	public static class JSON
 	{
 		static readonly Type includeAttrType = typeof(Include);
 		static readonly Type excludeAttrType = typeof(Exclude);
+		static readonly Type aliasAttrType = typeof(DecodeAlias);
 
 
 		public static Variant Load( string json )
@@ -142,7 +150,8 @@ namespace TinyJSON
 		}
 
 
-		private static Dictionary<string,Type> typeCache = new Dictionary<string,Type>();
+		private static Dictionary<string, Type> typeCache = new Dictionary<string, Type>();
+
 		private static Type FindType( string fullName )
 		{
 			if (fullName == null)
@@ -170,9 +179,9 @@ namespace TinyJSON
 		}
 
 
-		#if ENABLE_IL2CPP
+#if ENABLE_IL2CPP
 		[Preserve]
-		#endif
+#endif
 		private static T DecodeType<T>( Variant data )
 		{
 			if (data == null)
@@ -184,7 +193,7 @@ namespace TinyJSON
 
 			if (type.IsEnum)
 			{
-				return (T) Enum.Parse( type, data.ToString() );
+				return (T) Enum.Parse( type, data.ToString( CultureInfo.InvariantCulture ) );
 			}
 
 			if (type.IsPrimitive || type == typeof(string) || type == typeof(decimal))
@@ -206,7 +215,7 @@ namespace TinyJSON
 					var rankLengths = new int[arrayRank];
 					if (arrayData.CanBeMultiRankArray( rankLengths ))
 					{
-						var array = Array.CreateInstance( type.GetElementType(), rankLengths ); 
+						var array = Array.CreateInstance( type.GetElementType(), rankLengths );
 						var makeFunc = decodeMultiRankArrayMethod.MakeGenericMethod( new Type[] { type.GetElementType() } );
 						try
 						{
@@ -216,12 +225,14 @@ namespace TinyJSON
 						{
 							throw new DecodeException( "Error decoding multidimensional array. Did you try to decode into an array of incompatible rank or element type?", e );
 						}
+
 						return (T) Convert.ChangeType( array, typeof(T) );
 					}
+
 					throw new DecodeException( "Error decoding multidimensional array; JSON data doesn't seem fit this structure." );
-					#pragma warning disable 0162
+#pragma warning disable 0162
 					return default(T);
-					#pragma warning restore 0162
+#pragma warning restore 0162
 				}
 			}
 
@@ -275,9 +286,30 @@ namespace TinyJSON
 
 
 			// Now decode fields and properties.
-			foreach (var pair in data as ProxyObject)
+			foreach (var pair in (ProxyObject) data)
 			{
 				var field = type.GetField( pair.Key, instanceBindingFlags );
+
+				// If the field doesn't exist, search through any [DecodeAlias] attributes.
+				if (field == null)
+				{
+					var fields = type.GetFields( instanceBindingFlags );
+					foreach (var fieldInfo in fields)
+					{
+						foreach (var attribute in fieldInfo.GetCustomAttributes( true ))
+						{
+							if (aliasAttrType.IsInstanceOfType( attribute ))
+							{
+								if (((DecodeAlias) attribute).Contains( pair.Key ))
+								{
+									field = fieldInfo;
+									break;
+								}
+							}
+						}
+					}
+				}
+
 				if (field != null)
 				{
 					var shouldDecode = field.IsPublic;
@@ -313,6 +345,27 @@ namespace TinyJSON
 				}
 
 				var property = type.GetProperty( pair.Key, instanceBindingFlags );
+
+				// If the property doesn't exist, search through any [DecodeAlias] attributes.
+				if (property == null)
+				{
+					var properties = type.GetProperties( instanceBindingFlags );
+					foreach (var propertyInfo in properties)
+					{
+						foreach (var attribute in propertyInfo.GetCustomAttributes( false ))
+						{
+							if (aliasAttrType.IsInstanceOfType( attribute ))
+							{
+								if (((DecodeAlias) attribute).Contains( pair.Key ))
+								{
+									property = propertyInfo;
+									break;
+								}
+							}
+						}
+					}
+				}
+
 				if (property != null)
 				{
 					if (property.CanWrite && property.GetCustomAttributes( false ).AnyOfType( includeAttrType ))
@@ -354,9 +407,9 @@ namespace TinyJSON
 		}
 
 
-		#if ENABLE_IL2CPP
+#if ENABLE_IL2CPP
 		[Preserve]
-		#endif
+#endif
 		private static List<T> DecodeList<T>( Variant data )
 		{
 			var list = new List<T>();
@@ -370,12 +423,12 @@ namespace TinyJSON
 		}
 
 
-		#if ENABLE_IL2CPP
+#if ENABLE_IL2CPP
 		[Preserve]
-		#endif
-		private static Dictionary<K,V> DecodeDictionary<K,V>( Variant data )
+#endif
+		private static Dictionary<K, V> DecodeDictionary<K, V>( Variant data )
 		{
-			var dict = new Dictionary<K,V>();
+			var dict = new Dictionary<K, V>();
 			var type = typeof(K);
 
 			foreach (var pair in data as ProxyObject)
@@ -389,9 +442,9 @@ namespace TinyJSON
 		}
 
 
-		#if ENABLE_IL2CPP
+#if ENABLE_IL2CPP
 		[Preserve]
-		#endif
+#endif
 		private static T[] DecodeArray<T>( Variant data )
 		{
 			var arrayData = data as ProxyArray;
@@ -408,9 +461,9 @@ namespace TinyJSON
 		}
 
 
-		#if ENABLE_IL2CPP
+#if ENABLE_IL2CPP
 		[Preserve]
-		#endif
+#endif
 		private static void DecodeMultiRankArray<T>( ProxyArray arrayData, Array array, int arrayRank, int[] indices )
 		{
 			var count = arrayData.Count;
@@ -438,31 +491,31 @@ namespace TinyJSON
 		private static MethodInfo decodeMultiRankArrayMethod = typeof(JSON).GetMethod( "DecodeMultiRankArray", staticBindingFlags );
 
 
-		#if ENABLE_IL2CPP
+#if ENABLE_IL2CPP
 		[Preserve]
-		#endif
+#endif
 		public static void SupportTypeForAOT<T>()
 		{
 			DecodeType<T>( null );
 			DecodeList<T>( null );
 			DecodeArray<T>( null );
-			DecodeDictionary<Int16,T>( null );
-			DecodeDictionary<UInt16,T>( null );
-			DecodeDictionary<Int32,T>( null );
-			DecodeDictionary<UInt32,T>( null );
-			DecodeDictionary<Int64,T>( null );
-			DecodeDictionary<UInt64,T>( null );
-			DecodeDictionary<Single,T>( null );
-			DecodeDictionary<Double,T>( null );
-			DecodeDictionary<Decimal,T>( null );
-			DecodeDictionary<Boolean,T>( null );
-			DecodeDictionary<String,T>( null );
+			DecodeDictionary<Int16, T>( null );
+			DecodeDictionary<UInt16, T>( null );
+			DecodeDictionary<Int32, T>( null );
+			DecodeDictionary<UInt32, T>( null );
+			DecodeDictionary<Int64, T>( null );
+			DecodeDictionary<UInt64, T>( null );
+			DecodeDictionary<Single, T>( null );
+			DecodeDictionary<Double, T>( null );
+			DecodeDictionary<Decimal, T>( null );
+			DecodeDictionary<Boolean, T>( null );
+			DecodeDictionary<String, T>( null );
 		}
 
 
-		#if ENABLE_IL2CPP
+#if ENABLE_IL2CPP
 		[Preserve]
-		#endif
+#endif
 		private static void SupportValueTypesForAOT()
 		{
 			SupportTypeForAOT<Int16>();
@@ -479,4 +532,3 @@ namespace TinyJSON
 		}
 	}
 }
-
