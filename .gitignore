@@ -10,3 +10,4 @@
 test-results/
 NUnit/
 packages
+/.idea
