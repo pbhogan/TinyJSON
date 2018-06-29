@@ -1,5 +1,6 @@
 using System;
 using System.Collections;
+using System.Collections.Generic;
 using System.Globalization;
 using System.Reflection;
 using System.Text;
@@ -68,6 +69,15 @@ namespace TinyJSON
 		}
 
 
+		bool EnforceHeirarchyOrderEnabled
+		{
+			get
+			{
+				return (options & EncodeOptions.EnforceHeirarchyOrder) == EncodeOptions.EnforceHeirarchyOrder;
+			}
+		}
+
+
 		void EncodeValue( object value, bool forceTypeHint )
 		{
 			Array asArray;
@@ -114,6 +124,54 @@ namespace TinyJSON
 		}
 
 
+		IEnumerable<FieldInfo> GetFieldsForType( Type type )
+		{
+			if (EnforceHeirarchyOrderEnabled)
+			{
+				var types = new Stack<Type>();
+				while (type != null)
+				{
+					types.Push( type );
+					type = type.BaseType;
+				}
+
+				var fields = new List<FieldInfo>();
+				while (types.Count > 0)
+				{
+					fields.AddRange( types.Pop().GetFields( BindingFlags.DeclaredOnly | BindingFlags.Public | BindingFlags.NonPublic | BindingFlags.Instance ) );
+				}
+
+				return fields;
+			}
+
+			return type.GetFields( BindingFlags.Public | BindingFlags.NonPublic | BindingFlags.Instance );
+		}
+
+
+		IEnumerable<PropertyInfo> GetPropertiesForType( Type type )
+		{
+			if (EnforceHeirarchyOrderEnabled)
+			{
+				var types = new Stack<Type>();
+				while (type != null)
+				{
+					types.Push( type );
+					type = type.BaseType;
+				}
+
+				var properties = new List<PropertyInfo>();
+				while (types.Count > 0)
+				{
+					properties.AddRange( types.Pop().GetProperties( BindingFlags.DeclaredOnly | BindingFlags.Public | BindingFlags.NonPublic | BindingFlags.Instance ) );
+				}
+
+				return properties;
+			}
+
+			return type.GetProperties( BindingFlags.Public | BindingFlags.NonPublic | BindingFlags.Instance );
+		}
+
+
 		void EncodeObject( object value, bool forceTypeHint )
 		{
 			var type = value.GetType();
@@ -140,8 +198,7 @@ namespace TinyJSON
 				firstItem = false;
 			}
 
-			var fields = type.GetFields( BindingFlags.Public | BindingFlags.NonPublic | BindingFlags.Instance );
-			foreach (var field in fields)
+			foreach (var field in GetFieldsForType( type ))
 			{
 				var shouldTypeHint = false;
 				var shouldEncode = field.IsPublic;
@@ -173,8 +230,7 @@ namespace TinyJSON
 				}
 			}
 
-			var properties = type.GetProperties( BindingFlags.Public | BindingFlags.NonPublic | BindingFlags.Instance );
-			foreach (var property in properties)
+			foreach (var property in GetPropertiesForType( type ))
 			{
 				if (property.CanRead)
 				{
