@@ -8,17 +8,17 @@ TinyJSON is a simple JSON library for C# that strives for ease of use.
 * Uses reflection to dump and load object graphs automagically.
 * Supports primitives, classes, structs, enums, lists, dictionaries and arrays.
 * Supports single dimensional arrays, multidimensional arrays and jagged arrays.
-* Parsed data uses proxy variants that can be implicitly cast to primitive types for cleaner code.
+* Parsed data uses proxy variants that can be implicitly cast to primitive types for cleaner code, or directly encoded back to JSON.
 * Numeric types are handled without fuss.
-* Optional pretty printing JSON output.
 * Polymorphic classes supported with a type hint encoded into the JSON.
-* Optionally encode properties and private fields.
+* Supports optionally pretty printing JSON output.
+* Supports optionally encode properties and private fields.
 * Supports decoding fields and properties from aliased names.
 * Unit tested.
 
 ## Usage
 
-The API is namespaced under `TinyJSON` and the primary class is `JSON`. There are really only three methods you need to know:
+The API is namespaced under `TinyJSON` and the primary class is `JSON`. There are really only a few methods you need to know:
 
 ```csharp
 namespace TinyJSON
@@ -178,7 +178,7 @@ Several options are currently available for JSON encoding, and can be passed in 
 
 ## Using Variants
 
-For most use cases you can just assign, cast or make your object graph using the API outlined above, but at times you may need to work with the intermediate proxy objects to, say, dig through and iterate over a collection. To do this, cast the variant to the appropriate subclass (either `ProxyArray` or `ProxyObject`) and you're good to go:
+For most use cases you can just assign, cast or make your object graph using the API outlined above, but at times you may need to work with the intermediate proxy objects to, say, dig through and iterate over a collection. To do this, cast the `Variant` to the appropriate subclass (likely either `ProxyArray` or `ProxyObject`) and you're good to go:
 
 ```csharp
 var list = JSON.Load( "[1,2,3]" );
@@ -196,11 +196,17 @@ foreach (var pair in dict as ProxyObject)
 }
 ```
 
+The non-collection `Variant` subclasses are `ProxyBoolean`, `ProxyNumber` and `ProxyString`. A variant can also be `null`.
+
+Any `Variant` object can be directly encoded to JSON by calling its `ToJSON()` method or passing it to `JSON.Dump()`.
+
 ## Notes
 
-This project was developed with pain elimination and lightweight size in mind. That said, it should be able able to handle reasonable amounts of reasonable data at reasonable speeds.
+This project was developed with pain elimination and lightweight size in mind. It should be able to handle reasonable amounts of reasonable data at reasonable speeds, but it's not meant for massive data sets.
 
-My primary use case for this library is with Mono and Unity3D (currently version 4), so compatibility is focused there, though it should work with most modern C# environments.
+The primary use case for this library is with Unity3D, so compatibility is focused there, though it should work with most modern C# environments.
+
+It has been used in several published games. It's good for preferences, level and progress data, etc.
 
 ## Meta
 

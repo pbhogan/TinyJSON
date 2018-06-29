@@ -18,5 +18,11 @@ namespace TinyJSON
 		{
 			return value;
 		}
+
+
+		public override string ToString( IFormatProvider provider )
+		{
+			return value ? "true" : "false";
+		}
 	}
 }

@@ -76,5 +76,24 @@ namespace TinyJSON
 				return dict.Count;
 			}
 		}
+
+
+		public Dictionary<string, Variant>.KeyCollection Keys
+		{
+			get
+			{
+				return dict.Keys;
+			}
+		}
+
+
+		// ReSharper disable once UnusedMember.Global
+		public Dictionary<string, Variant>.ValueCollection Values
+		{
+			get
+			{
+				return dict.Values;
+			}
+		}
 	}
 }

@@ -80,47 +80,91 @@ namespace TinyJSON
 
 		void EncodeValue( object value, bool forceTypeHint )
 		{
-			Array asArray;
-			IList asList;
-			IDictionary asDict;
-			string asString;
-
 			if (value == null)
 			{
 				builder.Append( "null" );
+				return;
 			}
-			else if ((asString = value as string) != null)
+
+			if (value is string)
 			{
-				EncodeString( asString );
+				EncodeString( (string) value );
+				return;
 			}
-			else if (value is bool)
+
+			if (value is ProxyString)
 			{
-				builder.Append( value.ToString().ToLower() );
+				EncodeString( ((ProxyString) value).ToString( CultureInfo.InvariantCulture ) );
+				return;
 			}
-			else if (value is Enum)
-			{
-				EncodeString( value.ToString() );
-			}
-			else if ((asArray = value as Array) != null)
-			{
-				EncodeArray( asArray, forceTypeHint );
-			}
-			else if ((asList = value as IList) != null)
-			{
-				EncodeList( asList, forceTypeHint );
-			}
-			else if ((asDict = value as IDictionary) != null)
-			{
-				EncodeDictionary( asDict, forceTypeHint );
-			}
-			else if (value is char)
+
+			if (value is char)
 			{
 				EncodeString( value.ToString() );
+				return;
 			}
-			else
+
+			if (value is bool)
 			{
-				EncodeOther( value, forceTypeHint );
+				builder.Append( (bool) value ? "true" : "false" );
+				return;
 			}
+
+			if (value is Enum)
+			{
+				EncodeString( value.ToString() );
+				return;
+			}
+
+			if (value is Array)
+			{
+				EncodeArray( (Array) value, forceTypeHint );
+				return;
+			}
+
+			if (value is IList)
+			{
+				EncodeList( (IList) value, forceTypeHint );
+				return;
+			}
+
+			if (value is IDictionary)
+			{
+				EncodeDictionary( (IDictionary) value, forceTypeHint );
+				return;
+			}
+
+			if (value is ProxyArray)
+			{
+				EncodeProxyArray( (ProxyArray) value );
+				return;
+			}
+
+			if (value is ProxyObject)
+			{
+				EncodeProxyObject( (ProxyObject) value );
+				return;
+			}
+
+			if (value is float ||
+			    value is double ||
+			    value is int ||
+			    value is uint ||
+			    value is long ||
+			    value is sbyte ||
+			    value is byte ||
+			    value is short ||
+			    value is ushort ||
+			    value is ulong ||
+			    value is decimal ||
+			    value is ProxyBoolean ||
+			    value is ProxyNumber)
+			{
+				builder.Append( Convert.ToString( value, CultureInfo.InvariantCulture ) );
+				return;
+			}
+
+			EncodeObject( value, forceTypeHint );
 		}
 
 
@@ -270,6 +314,54 @@ namespace TinyJSON
 		}
 
 
+		void EncodeProxyArray( ProxyArray value )
+		{
+			if (value.Count == 0)
+			{
+				builder.Append( "[]" );
+			}
+			else
+			{
+				AppendOpenBracket();
+
+				var firstItem = true;
+				foreach (var obj in value)
+				{
+					AppendComma( firstItem );
+					EncodeValue( obj, false );
+					firstItem = false;
+				}
+
+				AppendCloseBracket();
+			}
+		}
+
+
+		void EncodeProxyObject( ProxyObject value )
+		{
+			if (value.Count == 0)
+			{
+				builder.Append( "{}" );
+			}
+			else
+			{
+				AppendOpenBrace();
+
+				var firstItem = true;
+				foreach (var e in value.Keys)
+				{
+					AppendComma( firstItem );
+					EncodeString( e );
+					AppendColon();
+					EncodeValue( value[e], false );
+					firstItem = false;
+				}
+
+				AppendCloseBrace();
+			}
+		}
+
+
 		void EncodeDictionary( IDictionary value, bool forceTypeHint )
 		{
 			if (value.Count == 0)
@@ -416,29 +508,6 @@ namespace TinyJSON
 			}
 
 			builder.Append( '\"' );
-		}
-
-
-		void EncodeOther( object value, bool forceTypeHint )
-		{
-			if (value is float ||
-			    value is double ||
-			    value is int ||
-			    value is uint ||
-			    value is long ||
-			    value is sbyte ||
-			    value is byte ||
-			    value is short ||
-			    value is ushort ||
-			    value is ulong ||
-			    value is decimal)
-			{
-				builder.Append( Convert.ToString( value, CultureInfo.InvariantCulture ) );
-			}
-			else
-			{
-				EncodeObject( value, forceTypeHint );
-			}
 		}
 
 

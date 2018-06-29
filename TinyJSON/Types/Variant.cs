@@ -24,6 +24,14 @@ namespace TinyJSON
 		}
 
 
+		// ReSharper disable once InconsistentNaming
+		// ReSharper disable once UnusedMember.Global
+		public string ToJSON()
+		{
+			return JSON.Dump( this );
+		}
+
+
 		public virtual TypeCode GetTypeCode()
 		{
 			return TypeCode.Object;

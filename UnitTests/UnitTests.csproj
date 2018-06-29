@@ -42,6 +42,7 @@
     <Compile Include="TestClassType.cs" />
     <Compile Include="TestCollectionTypes.cs" />
     <Compile Include="TestStructType.cs" />
+    <Compile Include="TestVariantEncoding.cs" />
   </ItemGroup>
   <Import Project="$(MSBuildBinPath)\Microsoft.CSharp.targets" />
   <ItemGroup>
