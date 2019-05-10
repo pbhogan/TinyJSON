@@ -10,6 +10,9 @@ namespace TinyJSON
 		PrettyPrint = 1,
 		NoTypeHints = 2,
 		IncludePublicProperties = 4,
-		EnforceHeirarchyOrder = 8,
+		EnforceHierarchyOrder = 8,
+
+		[Obsolete( "Use EncodeOptions.EnforceHierarchyOrder instead." )]
+		EnforceHeirarchyOrder = EnforceHierarchyOrder
 	}
 }

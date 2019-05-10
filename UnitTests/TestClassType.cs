@@ -101,7 +101,7 @@ public class TestClassType
 	public void TestDumpClassIncludePublicProperties()
 	{
 		var testClass = new TestClass { x = 5, y = 7, z = 0 };
-		Console.WriteLine( JSON.Dump( testClass, EncodeOptions.NoTypeHints | EncodeOptions.IncludePublicProperties ) );
+		//Console.WriteLine( JSON.Dump( testClass, EncodeOptions.NoTypeHints | EncodeOptions.IncludePublicProperties ) );
 		Assert.AreEqual( "{\"x\":5,\"y\":7,\"list\":null,\"p1\":1,\"p2\":2,\"p3\":3}", JSON.Dump( testClass, EncodeOptions.NoTypeHints | EncodeOptions.IncludePublicProperties ) );
 	}
 

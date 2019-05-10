@@ -203,6 +203,11 @@ namespace TinyJSON
 				return (T) Convert.ChangeType( data, type );
 			}
 
+			if (type == typeof(Guid))
+			{
+				return (T) (object) new Guid( data.ToString( CultureInfo.InvariantCulture ) );
+			}
+
 			if (type.IsArray)
 			{
 				if (type.GetArrayRank() == 1)

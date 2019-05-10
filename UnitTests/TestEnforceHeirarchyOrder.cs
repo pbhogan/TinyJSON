@@ -34,7 +34,7 @@ public class TestEnforceHeirarchyOrder
 	public void TestEncodeWithEnforceHeirarchyOrderEnabled()
 	{
 		var testClass = new ClassC { FieldA = 1, FieldB = 2, FieldC = 3, PropertyA = 4, PropertyB = 5, PropertyC = 6 };
-		var json = JSON.Dump( testClass, EncodeOptions.NoTypeHints | EncodeOptions.IncludePublicProperties | EncodeOptions.EnforceHeirarchyOrder );
+		var json = JSON.Dump( testClass, EncodeOptions.NoTypeHints | EncodeOptions.IncludePublicProperties | EncodeOptions.EnforceHierarchyOrder );
 		Assert.AreEqual( "{\"FieldA\":1,\"FieldB\":2,\"FieldC\":3,\"PropertyA\":4,\"PropertyB\":5,\"PropertyC\":6}", json );
 	}
 }

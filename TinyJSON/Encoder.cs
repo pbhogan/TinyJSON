@@ -69,11 +69,11 @@ namespace TinyJSON
 		}
 
 
-		bool EnforceHeirarchyOrderEnabled
+		bool EnforceHierarchyOrderEnabled
 		{
 			get
 			{
-				return (options & EncodeOptions.EnforceHeirarchyOrder) == EncodeOptions.EnforceHeirarchyOrder;
+				return (options & EncodeOptions.EnforceHierarchyOrder) == EncodeOptions.EnforceHierarchyOrder;
 			}
 		}
 
@@ -134,6 +134,12 @@ namespace TinyJSON
 				return;
 			}
 
+			if (value is Guid)
+			{
+				EncodeString( value.ToString() );
+				return;
+			}
+
 			if (value is ProxyArray)
 			{
 				EncodeProxyArray( (ProxyArray) value );
@@ -170,7 +176,7 @@ namespace TinyJSON
 
 		IEnumerable<FieldInfo> GetFieldsForType( Type type )
 		{
-			if (EnforceHeirarchyOrderEnabled)
+			if (EnforceHierarchyOrderEnabled)
 			{
 				var types = new Stack<Type>();
 				while (type != null)
@@ -194,7 +200,7 @@ namespace TinyJSON
 
 		IEnumerable<PropertyInfo> GetPropertiesForType( Type type )
 		{
-			if (EnforceHeirarchyOrderEnabled)
+			if (EnforceHierarchyOrderEnabled)
 			{
 				var types = new Stack<Type>();
 				while (type != null)

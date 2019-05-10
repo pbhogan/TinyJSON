@@ -130,6 +130,41 @@ public class TestSimpleTypes
 	}
 
 
+	[Test]
+	public void TestDumpGuid()
+	{
+		var guid = Guid.NewGuid();
+		Assert.AreEqual( "\"" + guid.ToString( "D" ) + "\"", JSON.Dump( guid ) );
+	}
+
+
+	[Test]
+	public void TestLoadGuid()
+	{
+		var guid = Guid.NewGuid();
+		Assert.AreEqual( guid, (Guid) JSON.Load( "\"" + guid.ToString( "D" ) + "\"" ) );
+	}
+
+
+	class GuidContainer
+	{
+		public Guid guid;
+	}
+
+
+	[Test]
+	public void TestGuidInClass()
+	{
+		var guid = Guid.NewGuid();
+		var guidContainer = new GuidContainer();
+		guidContainer.guid = guid;
+		var json = JSON.Dump( guidContainer, EncodeOptions.NoTypeHints );
+		Assert.AreEqual( "{\"guid\":\"" + guid.ToString( "D" ) + "\"}", json );
+		JSON.MakeInto( JSON.Load( json ), out guidContainer );
+		Assert.AreEqual( guid, guidContainer.guid );
+	}
+
+
 	class ValueTypes
 	{
 		public Int16 i16 = 1;

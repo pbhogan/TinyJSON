@@ -235,5 +235,11 @@ namespace TinyJSON
 		{
 			return variant.ToString( FormatProvider );
 		}
+
+
+		public static implicit operator Guid( Variant variant )
+		{
+			return new Guid( variant.ToString( FormatProvider ) );
+		}
 	}
 }
