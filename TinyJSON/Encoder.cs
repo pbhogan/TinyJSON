@@ -4,6 +4,7 @@ using System.Collections.Generic;
 using System.Globalization;
 using System.Reflection;
 using System.Text;
+using System.IO;
 
 
 namespace TinyJSON
@@ -17,13 +18,19 @@ namespace TinyJSON
 		readonly StringBuilder builder;
 		readonly EncodeOptions options;
 		int indent;
+		readonly bool writeToFile;
+		readonly string filePath;
+		StringBuilder buffer;
+		const int writeThreshold = 4096; //arbitrary
 
-
-		Encoder( EncodeOptions options )
+		Encoder( EncodeOptions options , bool writeToFile, string filePath)
 		{
 			this.options = options;
 			builder = new StringBuilder();
 			indent = 0;
+			this.writeToFile = writeToFile;
+			this.filePath = filePath;
+			buffer = new StringBuilder(writeThreshold * 2);
 		}
 
 
@@ -36,9 +43,26 @@ namespace TinyJSON
 
 		public static string Encode( object obj, EncodeOptions options )
 		{
-			var instance = new Encoder( options );
+			var instance = new Encoder( options , false , null );
 			instance.EncodeValue( obj, false );
 			return instance.builder.ToString();
+		}
+
+
+		public static void EncodeToFile( object obj , string filePath )
+		{
+			EncodeToFile(obj, filePath, EncodeOptions.None);
+		}
+
+
+		public static void EncodeToFile( object obj , string filePath , EncodeOptions options )
+		{
+			string directory = Path.GetDirectoryName(filePath);
+			if (!Directory.Exists(directory)) Directory.CreateDirectory(directory);
+			File.Create(filePath).Close();
+			var instance = new Encoder(options, true, filePath);
+			instance.EncodeValue(obj, false);
+			instance.WriteBufferToFile();
 		}
 
 
@@ -78,11 +102,40 @@ namespace TinyJSON
 		}
 
 
+		void Append(char character)
+		{
+			if (writeToFile)
+			{
+				buffer.Append(character);
+				if (buffer.Length > writeThreshold) WriteBufferToFile();
+			}
+			else builder.Append(character);
+		}
+
+
+		void Append(string text)
+		{
+			if (writeToFile)
+			{
+				buffer.Append(text);
+				if (buffer.Length > writeThreshold) WriteBufferToFile();
+			}
+			else builder.Append(text);
+		}
+
+
+		void WriteBufferToFile()
+		{
+			System.IO.File.AppendAllText(filePath, buffer.ToString());
+			buffer = new StringBuilder(writeThreshold * 2);
+		}
+
+
 		void EncodeValue( object value, bool forceTypeHint )
 		{
 			if (value == null)
 			{
-				builder.Append( "null" );
+				Append( "null" );
 				return;
 			}
 
@@ -106,7 +159,7 @@ namespace TinyJSON
 
 			if (value is bool)
 			{
-				builder.Append( (bool) value ? "true" : "false" );
+				Append( (bool) value ? "true" : "false" );
 				return;
 			}
 
@@ -166,7 +219,7 @@ namespace TinyJSON
 			    value is ProxyBoolean ||
 			    value is ProxyNumber)
 			{
-				builder.Append( Convert.ToString( value, CultureInfo.InvariantCulture ) );
+				Append( Convert.ToString( value, CultureInfo.InvariantCulture ) );
 				return;
 			}
 
@@ -324,7 +377,7 @@ namespace TinyJSON
 		{
 			if (value.Count == 0)
 			{
-				builder.Append( "[]" );
+				Append( "[]" );
 			}
 			else
 			{
@@ -347,7 +400,7 @@ namespace TinyJSON
 		{
 			if (value.Count == 0)
 			{
-				builder.Append( "{}" );
+				Append( "{}" );
 			}
 			else
 			{
@@ -372,7 +425,7 @@ namespace TinyJSON
 		{
 			if (value.Count == 0)
 			{
-				builder.Append( "{}" );
+				Append( "{}" );
 			}
 			else
 			{
@@ -398,7 +451,7 @@ namespace TinyJSON
 		{
 			if (value.Count == 0)
 			{
-				builder.Append( "[]" );
+				Append( "[]" );
 			}
 			else
 			{
@@ -463,7 +516,7 @@ namespace TinyJSON
 
 		void EncodeString( string value )
 		{
-			builder.Append( '\"' );
+			Append( '\"' );
 
 			var charArray = value.ToCharArray();
 			foreach (var c in charArray)
@@ -471,49 +524,49 @@ namespace TinyJSON
 				switch (c)
 				{
 					case '"':
-						builder.Append( "\\\"" );
+						Append( "\\\"" );
 						break;
 
 					case '\\':
-						builder.Append( "\\\\" );
+						Append( "\\\\" );
 						break;
 
 					case '\b':
-						builder.Append( "\\b" );
+						Append( "\\b" );
 						break;
 
 					case '\f':
-						builder.Append( "\\f" );
+						Append( "\\f" );
 						break;
 
 					case '\n':
-						builder.Append( "\\n" );
+						Append( "\\n" );
 						break;
 
 					case '\r':
-						builder.Append( "\\r" );
+						Append( "\\r" );
 						break;
 
 					case '\t':
-						builder.Append( "\\t" );
+						Append( "\\t" );
 						break;
 
 					default:
 						var codepoint = Convert.ToInt32( c );
 						if ((codepoint >= 32) && (codepoint <= 126))
 						{
-							builder.Append( c );
+							Append( c );
 						}
 						else
 						{
-							builder.Append( "\\u" + Convert.ToString( codepoint, 16 ).PadLeft( 4, '0' ) );
+							Append( "\\u" + Convert.ToString( codepoint, 16 ).PadLeft( 4, '0' ) );
 						}
 
 						break;
 				}
 			}
 
-			builder.Append( '\"' );
+			Append( '\"' );
 		}
 
 
@@ -523,18 +576,18 @@ namespace TinyJSON
 		{
 			for (var i = 0; i < indent; i++)
 			{
-				builder.Append( '\t' );
+				Append( '\t' );
 			}
 		}
 
 
 		void AppendOpenBrace()
 		{
-			builder.Append( '{' );
+			Append( '{' );
 
 			if (PrettyPrintEnabled)
 			{
-				builder.Append( '\n' );
+				Append( '\n' );
 				indent++;
 			}
 		}
@@ -544,22 +597,22 @@ namespace TinyJSON
 		{
 			if (PrettyPrintEnabled)
 			{
-				builder.Append( '\n' );
+				Append( '\n' );
 				indent--;
 				AppendIndent();
 			}
 
-			builder.Append( '}' );
+			Append( '}' );
 		}
 
 
 		void AppendOpenBracket()
 		{
-			builder.Append( '[' );
+			Append( '[' );
 
 			if (PrettyPrintEnabled)
 			{
-				builder.Append( '\n' );
+				Append( '\n' );
 				indent++;
 			}
 		}
@@ -569,12 +622,12 @@ namespace TinyJSON
 		{
 			if (PrettyPrintEnabled)
 			{
-				builder.Append( '\n' );
+				Append( '\n' );
 				indent--;
 				AppendIndent();
 			}
 
-			builder.Append( ']' );
+			Append( ']' );
 		}
 
 
@@ -582,11 +635,11 @@ namespace TinyJSON
 		{
 			if (!firstItem)
 			{
-				builder.Append( ',' );
+				Append( ',' );
 
 				if (PrettyPrintEnabled)
 				{
-					builder.Append( '\n' );
+					Append( '\n' );
 				}
 			}
 
@@ -599,11 +652,11 @@ namespace TinyJSON
 
 		void AppendColon()
 		{
-			builder.Append( ':' );
+			Append( ':' );
 
 			if (PrettyPrintEnabled)
 			{
-				builder.Append( ' ' );
+				Append( ' ' );
 			}
 		}
 

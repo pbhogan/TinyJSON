@@ -124,25 +124,45 @@ namespace TinyJSON
 		public static string Dump( object data, EncodeOptions options )
 		{
 			// Invoke methods tagged with [BeforeEncode] attribute.
+			InvokeBeforeEncode( data );
+			return Encoder.Encode( data, options );
+		}
+
+
+		public static void DumpToFile( object data, string filePath )
+		{
+			DumpToFile( data, filePath, EncodeOptions.None );
+		}
+
+
+		public static void DumpToFile( object data, string filePath, EncodeOptions options )
+		{
+			if (string.IsNullOrEmpty(filePath)) throw new ArgumentException("filePath is null or empty");
+			// Invoke methods tagged with [BeforeEncode] attribute.
+			InvokeBeforeEncode( data );
+			Encoder.EncodeToFile( data, filePath, options );
+		}
+
+
+		private static void InvokeBeforeEncode( object data )
+		{
 			if (data != null)
 			{
 				var type = data.GetType();
 				if (!(type.IsEnum || type.IsPrimitive || type.IsArray))
 				{
-					foreach (var method in type.GetMethods( instanceBindingFlags ))
+					foreach (var method in type.GetMethods(instanceBindingFlags))
 					{
-						if (method.GetCustomAttributes( false ).AnyOfType( typeof(BeforeEncode) ))
+						if (method.GetCustomAttributes(false).AnyOfType(typeof(BeforeEncode)))
 						{
 							if (method.GetParameters().Length == 0)
 							{
-								method.Invoke( data, null );
+								method.Invoke(data, null);
 							}
 						}
 					}
 				}
 			}
-
-			return Encoder.Encode( data, options );
 		}
 
 
